@@ -20817,7 +20817,7 @@
   var _m1$12 = /* @__PURE__ */ new Matrix4();
   var _m$1 = /* @__PURE__ */ new Matrix3();
   _m$1.set(-1, 0, 0, 0, 1, 0, 0, 0, 1);
-  function WebGLBackground(renderer2, environments, state2, objects, alpha, premultipliedAlpha) {
+  function WebGLBackground(renderer2, environments, state, objects, alpha, premultipliedAlpha) {
     const clearColor = new Color(0);
     let clearAlpha = alpha === true ? 0 : 1;
     let planeMesh;
@@ -20844,14 +20844,14 @@
       }
       const environmentBlendMode = renderer2.xr.getEnvironmentBlendMode();
       if (environmentBlendMode === "additive") {
-        state2.buffers.color.setClear(0, 0, 0, 1, premultipliedAlpha);
+        state.buffers.color.setClear(0, 0, 0, 1, premultipliedAlpha);
       } else if (environmentBlendMode === "alpha-blend") {
-        state2.buffers.color.setClear(0, 0, 0, 0, premultipliedAlpha);
+        state.buffers.color.setClear(0, 0, 0, 0, premultipliedAlpha);
       }
       if (renderer2.autoClear || forceClear) {
-        state2.buffers.depth.setTest(true);
-        state2.buffers.depth.setMask(true);
-        state2.buffers.color.setMask(true);
+        state.buffers.depth.setTest(true);
+        state.buffers.depth.setMask(true);
+        state.buffers.color.setMask(true);
         renderer2.clear(renderer2.autoClearColor, renderer2.autoClearDepth, renderer2.autoClearStencil);
       }
     }
@@ -20944,7 +20944,7 @@
     }
     function setClear(color, alpha2) {
       color.getRGB(_rgb, getUnlitUniformColorSpace(renderer2));
-      state2.buffers.color.setClear(_rgb.r, _rgb.g, _rgb.b, alpha2, premultipliedAlpha);
+      state.buffers.color.setClear(_rgb.r, _rgb.g, _rgb.b, alpha2, premultipliedAlpha);
     }
     function dispose() {
       if (boxMesh !== void 0) {
@@ -20987,9 +20987,9 @@
     let forceUpdate = false;
     function setup(object, material, program, geometry, index) {
       let updateBuffers = false;
-      const state2 = getBindingState(object, geometry, program, material);
-      if (currentState !== state2) {
-        currentState = state2;
+      const state = getBindingState(object, geometry, program, material);
+      if (currentState !== state) {
+        currentState = state;
         bindVertexArrayObject(currentState.object);
       }
       updateBuffers = needsUpdate(object, geometry, program, index);
@@ -21032,12 +21032,12 @@
         stateMap = {};
         programMap[program.id] = stateMap;
       }
-      let state2 = stateMap[wireframe];
-      if (state2 === void 0) {
-        state2 = createBindingState(createVertexArrayObject());
-        stateMap[wireframe] = state2;
+      let state = stateMap[wireframe];
+      if (state === void 0) {
+        state = createBindingState(createVertexArrayObject());
+        stateMap[wireframe] = state;
       }
-      return state2;
+      return state;
     }
     function createBindingState(vao) {
       const newAttributes = [];
@@ -25025,7 +25025,7 @@
   function WebGLLights(extensions) {
     const cache = new UniformsCache();
     const shadowCache = ShadowUniformsCache();
-    const state2 = {
+    const state = {
       version: 0,
       hash: {
         sunLength: -1,
@@ -25068,13 +25068,13 @@
       numSpotLightShadowsWithMaps: 0,
       numLightProbes: 0
     };
-    for (let i = 0; i < 9; i++) state2.probe.push(new Vector3());
+    for (let i = 0; i < 9; i++) state.probe.push(new Vector3());
     const vector3 = new Vector3();
     const matrix4 = new Matrix4();
     const matrix42 = new Matrix4();
     function setup(lights) {
       let r = 0, g = 0, b = 0;
-      for (let i = 0; i < 9; i++) state2.probe[i].set(0, 0, 0);
+      for (let i = 0; i < 9; i++) state.probe[i].set(0, 0, 0);
       let sunLength = 0;
       let numSunShadows = 0;
       let numSunShadowCascades = 0;
@@ -25109,7 +25109,7 @@
           b += color.b * intensity;
         } else if (light.isLightProbe) {
           for (let j = 0; j < 9; j++) {
-            state2.probe[j].addScaledVector(light.sh.coefficients[j], intensity);
+            state.probe[j].addScaledVector(light.sh.coefficients[j], intensity);
           }
           numLightProbes++;
         } else if (light.isSunLight) {
@@ -25123,17 +25123,17 @@
             shadowUniforms.shadowNormalBias = shadow.normalBias;
             shadowUniforms.shadowRadius = shadow.radius;
             shadowUniforms.shadowMapSize.copy(shadow.mapSize).multiply(shadow.getFrameExtents());
-            state2.sunShadow[numSunShadows] = shadowUniforms;
-            state2.sunShadowMap[numSunShadows] = shadowMap;
+            state.sunShadow[numSunShadows] = shadowUniforms;
+            state.sunShadowMap[numSunShadows] = shadowMap;
             const cascadeCount = shadow.getViewportCount();
             for (let j = 0; j < cascadeCount; j++) {
-              state2.sunShadowMatrix[numSunShadowCascades + j] = shadow.getMatrix(j);
-              state2.sunShadowCascade[numSunShadowCascades + j] = shadow._cascadeData[j];
+              state.sunShadowMatrix[numSunShadowCascades + j] = shadow.getMatrix(j);
+              state.sunShadowCascade[numSunShadowCascades + j] = shadow._cascadeData[j];
             }
             numSunShadowCascades += cascadeCount;
             numSunShadows++;
           }
-          state2.sun[sunLength] = uniforms2;
+          state.sun[sunLength] = uniforms2;
           sunLength++;
         } else if (light.isDirectionalLight) {
           const uniforms2 = cache.get(light);
@@ -25146,12 +25146,12 @@
             shadowUniforms.shadowNormalBias = shadow.normalBias;
             shadowUniforms.shadowRadius = shadow.radius;
             shadowUniforms.shadowMapSize = shadow.mapSize;
-            state2.directionalShadow[directionalLength] = shadowUniforms;
-            state2.directionalShadowMap[directionalLength] = shadowMap;
-            state2.directionalShadowMatrix[directionalLength] = light.shadow.matrix;
+            state.directionalShadow[directionalLength] = shadowUniforms;
+            state.directionalShadowMap[directionalLength] = shadowMap;
+            state.directionalShadowMatrix[directionalLength] = light.shadow.matrix;
             numDirectionalShadows++;
           }
-          state2.directional[directionalLength] = uniforms2;
+          state.directional[directionalLength] = uniforms2;
           directionalLength++;
         } else if (light.isSpotLight) {
           const uniforms2 = cache.get(light);
@@ -25161,15 +25161,15 @@
           uniforms2.coneCos = Math.cos(light.angle);
           uniforms2.penumbraCos = Math.cos(light.angle * (1 - light.penumbra));
           uniforms2.decay = light.decay;
-          state2.spot[spotLength] = uniforms2;
+          state.spot[spotLength] = uniforms2;
           const shadow = light.shadow;
           if (light.map) {
-            state2.spotLightMap[numSpotMaps] = light.map;
+            state.spotLightMap[numSpotMaps] = light.map;
             numSpotMaps++;
             shadow.updateMatrices(light);
             if (light.castShadow) numSpotShadowsWithMaps++;
           }
-          state2.spotLightMatrix[spotLength] = shadow.matrix;
+          state.spotLightMatrix[spotLength] = shadow.matrix;
           if (light.castShadow) {
             const shadowUniforms = shadowCache.get(light);
             shadowUniforms.shadowIntensity = shadow.intensity;
@@ -25177,8 +25177,8 @@
             shadowUniforms.shadowNormalBias = shadow.normalBias;
             shadowUniforms.shadowRadius = shadow.radius;
             shadowUniforms.shadowMapSize = shadow.mapSize;
-            state2.spotShadow[spotLength] = shadowUniforms;
-            state2.spotShadowMap[spotLength] = shadowMap;
+            state.spotShadow[spotLength] = shadowUniforms;
+            state.spotShadowMap[spotLength] = shadowMap;
             numSpotShadows++;
           }
           spotLength++;
@@ -25187,7 +25187,7 @@
           uniforms2.color.copy(color).multiplyScalar(intensity);
           uniforms2.halfWidth.set(light.width * 0.5, 0, 0);
           uniforms2.halfHeight.set(0, light.height * 0.5, 0);
-          state2.rectArea[rectAreaLength] = uniforms2;
+          state.rectArea[rectAreaLength] = uniforms2;
           rectAreaLength++;
         } else if (light.isPointLight) {
           const uniforms2 = cache.get(light);
@@ -25204,57 +25204,57 @@
             shadowUniforms.shadowMapSize = shadow.mapSize;
             shadowUniforms.shadowCameraNear = shadow.camera.near;
             shadowUniforms.shadowCameraFar = shadow.camera.far;
-            state2.pointShadow[pointLength] = shadowUniforms;
-            state2.pointShadowMap[pointLength] = shadowMap;
-            state2.pointShadowMatrix[pointLength] = light.shadow.matrix;
+            state.pointShadow[pointLength] = shadowUniforms;
+            state.pointShadowMap[pointLength] = shadowMap;
+            state.pointShadowMatrix[pointLength] = light.shadow.matrix;
             numPointShadows++;
           }
-          state2.point[pointLength] = uniforms2;
+          state.point[pointLength] = uniforms2;
           pointLength++;
         } else if (light.isHemisphereLight) {
           const uniforms2 = cache.get(light);
           uniforms2.skyColor.copy(light.color).multiplyScalar(intensity);
           uniforms2.groundColor.copy(light.groundColor).multiplyScalar(intensity);
-          state2.hemi[hemiLength] = uniforms2;
+          state.hemi[hemiLength] = uniforms2;
           hemiLength++;
         }
       }
       if (rectAreaLength > 0) {
         if (extensions.has("OES_texture_float_linear") === true) {
-          state2.rectAreaLTC1 = UniformsLib.LTC_FLOAT_1;
-          state2.rectAreaLTC2 = UniformsLib.LTC_FLOAT_2;
+          state.rectAreaLTC1 = UniformsLib.LTC_FLOAT_1;
+          state.rectAreaLTC2 = UniformsLib.LTC_FLOAT_2;
         } else {
-          state2.rectAreaLTC1 = UniformsLib.LTC_HALF_1;
-          state2.rectAreaLTC2 = UniformsLib.LTC_HALF_2;
+          state.rectAreaLTC1 = UniformsLib.LTC_HALF_1;
+          state.rectAreaLTC2 = UniformsLib.LTC_HALF_2;
         }
       }
-      state2.ambient[0] = r;
-      state2.ambient[1] = g;
-      state2.ambient[2] = b;
-      const hash = state2.hash;
+      state.ambient[0] = r;
+      state.ambient[1] = g;
+      state.ambient[2] = b;
+      const hash = state.hash;
       if (hash.sunLength !== sunLength || hash.directionalLength !== directionalLength || hash.pointLength !== pointLength || hash.spotLength !== spotLength || hash.rectAreaLength !== rectAreaLength || hash.hemiLength !== hemiLength || hash.numSunShadows !== numSunShadows || hash.numDirectionalShadows !== numDirectionalShadows || hash.numPointShadows !== numPointShadows || hash.numSpotShadows !== numSpotShadows || hash.numSpotMaps !== numSpotMaps || hash.numLightProbes !== numLightProbes) {
-        state2.sun.length = sunLength;
-        state2.directional.length = directionalLength;
-        state2.spot.length = spotLength;
-        state2.rectArea.length = rectAreaLength;
-        state2.point.length = pointLength;
-        state2.hemi.length = hemiLength;
-        state2.sunShadow.length = numSunShadows;
-        state2.sunShadowMap.length = numSunShadows;
-        state2.sunShadowMatrix.length = numSunShadowCascades;
-        state2.sunShadowCascade.length = numSunShadowCascades;
-        state2.directionalShadow.length = numDirectionalShadows;
-        state2.directionalShadowMap.length = numDirectionalShadows;
-        state2.directionalShadowMatrix.length = numDirectionalShadows;
-        state2.pointShadow.length = numPointShadows;
-        state2.pointShadowMap.length = numPointShadows;
-        state2.pointShadowMatrix.length = numPointShadows;
-        state2.spotShadow.length = numSpotShadows;
-        state2.spotShadowMap.length = numSpotShadows;
-        state2.spotLightMatrix.length = numSpotShadows + numSpotMaps - numSpotShadowsWithMaps;
-        state2.spotLightMap.length = numSpotMaps;
-        state2.numSpotLightShadowsWithMaps = numSpotShadowsWithMaps;
-        state2.numLightProbes = numLightProbes;
+        state.sun.length = sunLength;
+        state.directional.length = directionalLength;
+        state.spot.length = spotLength;
+        state.rectArea.length = rectAreaLength;
+        state.point.length = pointLength;
+        state.hemi.length = hemiLength;
+        state.sunShadow.length = numSunShadows;
+        state.sunShadowMap.length = numSunShadows;
+        state.sunShadowMatrix.length = numSunShadowCascades;
+        state.sunShadowCascade.length = numSunShadowCascades;
+        state.directionalShadow.length = numDirectionalShadows;
+        state.directionalShadowMap.length = numDirectionalShadows;
+        state.directionalShadowMatrix.length = numDirectionalShadows;
+        state.pointShadow.length = numPointShadows;
+        state.pointShadowMap.length = numPointShadows;
+        state.pointShadowMatrix.length = numPointShadows;
+        state.spotShadow.length = numSpotShadows;
+        state.spotShadowMap.length = numSpotShadows;
+        state.spotLightMatrix.length = numSpotShadows + numSpotMaps - numSpotShadowsWithMaps;
+        state.spotLightMap.length = numSpotMaps;
+        state.numSpotLightShadowsWithMaps = numSpotShadowsWithMaps;
+        state.numLightProbes = numLightProbes;
         hash.sunLength = sunLength;
         hash.directionalLength = directionalLength;
         hash.pointLength = pointLength;
@@ -25267,7 +25267,7 @@
         hash.numSpotShadows = numSpotShadows;
         hash.numSpotMaps = numSpotMaps;
         hash.numLightProbes = numLightProbes;
-        state2.version = nextVersion++;
+        state.version = nextVersion++;
       }
     }
     function setupView(lights, camera2) {
@@ -25281,19 +25281,19 @@
       for (let i = 0, l = lights.length; i < l; i++) {
         const light = lights[i];
         if (light.isSunLight) {
-          const uniforms2 = state2.sun[sunLength];
+          const uniforms2 = state.sun[sunLength];
           uniforms2.direction.setFromMatrixPosition(light.matrixWorld);
           uniforms2.direction.transformDirection(viewMatrix);
           sunLength++;
         } else if (light.isDirectionalLight) {
-          const uniforms2 = state2.directional[directionalLength];
+          const uniforms2 = state.directional[directionalLength];
           uniforms2.direction.setFromMatrixPosition(light.matrixWorld);
           vector3.setFromMatrixPosition(light.target.matrixWorld);
           uniforms2.direction.sub(vector3);
           uniforms2.direction.transformDirection(viewMatrix);
           directionalLength++;
         } else if (light.isSpotLight) {
-          const uniforms2 = state2.spot[spotLength];
+          const uniforms2 = state.spot[spotLength];
           uniforms2.position.setFromMatrixPosition(light.matrixWorld);
           uniforms2.position.applyMatrix4(viewMatrix);
           uniforms2.direction.setFromMatrixPosition(light.matrixWorld);
@@ -25302,7 +25302,7 @@
           uniforms2.direction.transformDirection(viewMatrix);
           spotLength++;
         } else if (light.isRectAreaLight) {
-          const uniforms2 = state2.rectArea[rectAreaLength];
+          const uniforms2 = state.rectArea[rectAreaLength];
           uniforms2.position.setFromMatrixPosition(light.matrixWorld);
           uniforms2.position.applyMatrix4(viewMatrix);
           matrix42.identity();
@@ -25315,12 +25315,12 @@
           uniforms2.halfHeight.applyMatrix4(matrix42);
           rectAreaLength++;
         } else if (light.isPointLight) {
-          const uniforms2 = state2.point[pointLength];
+          const uniforms2 = state.point[pointLength];
           uniforms2.position.setFromMatrixPosition(light.matrixWorld);
           uniforms2.position.applyMatrix4(viewMatrix);
           pointLength++;
         } else if (light.isHemisphereLight) {
-          const uniforms2 = state2.hemi[hemiLength];
+          const uniforms2 = state.hemi[hemiLength];
           uniforms2.direction.setFromMatrixPosition(light.matrixWorld);
           uniforms2.direction.transformDirection(viewMatrix);
           hemiLength++;
@@ -25330,7 +25330,7 @@
     return {
       setup,
       setupView,
-      state: state2
+      state
     };
   }
   function WebGLRenderState(extensions) {
@@ -25339,7 +25339,7 @@
     const shadowsArray = [];
     const lightProbeGridArray = [];
     function init(camera2) {
-      state2.camera = camera2;
+      state.camera = camera2;
       lightsArray.length = 0;
       shadowsArray.length = 0;
       lightProbeGridArray.length = 0;
@@ -25361,7 +25361,7 @@
     function setupLightsView(camera2) {
       lights.setupView(lightsArray, camera2);
     }
-    const state2 = {
+    const state = {
       lightsArray,
       shadowsArray,
       lightProbeGridArray,
@@ -25372,7 +25372,7 @@
     };
     return {
       init,
-      state: state2,
+      state,
       setupLights,
       setupLightsView,
       pushLight,
@@ -26531,7 +26531,7 @@
       reset
     };
   }
-  function WebGLTextures(_gl, extensions, state2, properties, capabilities, utils, info) {
+  function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, info) {
     const multisampledRTTExt = extensions.has("WEBGL_multisampled_render_to_texture") ? extensions.get("WEBGL_multisampled_render_to_texture") : null;
     const supportsInvalidateFramebuffer = typeof navigator === "undefined" ? false : /OculusBrowser/g.test(navigator.userAgent);
     const _imageDimensions = new Vector2();
@@ -26866,7 +26866,7 @@
       } else if (texture.isExternalTexture) {
         textureProperties.__webglTexture = texture.sourceTexture ? texture.sourceTexture : null;
       }
-      state2.bindTexture(_gl.TEXTURE_2D, textureProperties.__webglTexture, _gl.TEXTURE0 + slot);
+      state.bindTexture(_gl.TEXTURE_2D, textureProperties.__webglTexture, _gl.TEXTURE0 + slot);
     }
     function setTexture2DArray(texture, slot) {
       const textureProperties = properties.get(texture);
@@ -26876,7 +26876,7 @@
       } else if (texture.isExternalTexture) {
         textureProperties.__webglTexture = texture.sourceTexture ? texture.sourceTexture : null;
       }
-      state2.bindTexture(_gl.TEXTURE_2D_ARRAY, textureProperties.__webglTexture, _gl.TEXTURE0 + slot);
+      state.bindTexture(_gl.TEXTURE_2D_ARRAY, textureProperties.__webglTexture, _gl.TEXTURE0 + slot);
     }
     function setTexture3D(texture, slot) {
       const textureProperties = properties.get(texture);
@@ -26884,7 +26884,7 @@
         uploadTexture(textureProperties, texture, slot);
         return;
       }
-      state2.bindTexture(_gl.TEXTURE_3D, textureProperties.__webglTexture, _gl.TEXTURE0 + slot);
+      state.bindTexture(_gl.TEXTURE_3D, textureProperties.__webglTexture, _gl.TEXTURE0 + slot);
     }
     function setTextureCube(texture, slot) {
       const textureProperties = properties.get(texture);
@@ -26892,7 +26892,7 @@
         uploadCubeTexture(textureProperties, texture, slot);
         return;
       }
-      state2.bindTexture(_gl.TEXTURE_CUBE_MAP, textureProperties.__webglTexture, _gl.TEXTURE0 + slot);
+      state.bindTexture(_gl.TEXTURE_CUBE_MAP, textureProperties.__webglTexture, _gl.TEXTURE0 + slot);
     }
     const wrappingToGL = {
       [RepeatWrapping]: _gl.REPEAT,
@@ -26986,7 +26986,7 @@
       const componentStride = 4;
       const updateRanges = texture.updateRanges;
       if (updateRanges.length === 0) {
-        state2.texSubImage2D(_gl.TEXTURE_2D, 0, 0, 0, image.width, image.height, glFormat, glType, image.data);
+        state.texSubImage2D(_gl.TEXTURE_2D, 0, 0, 0, image.width, image.height, glFormat, glType, image.data);
       } else {
         updateRanges.sort((a, b) => a.start - b.start);
         let mergeIndex = 0;
@@ -27007,10 +27007,10 @@
           }
         }
         updateRanges.length = mergeIndex + 1;
-        const currentUnpackRowLen = state2.getParameter(_gl.UNPACK_ROW_LENGTH);
-        const currentUnpackSkipPixels = state2.getParameter(_gl.UNPACK_SKIP_PIXELS);
-        const currentUnpackSkipRows = state2.getParameter(_gl.UNPACK_SKIP_ROWS);
-        state2.pixelStorei(_gl.UNPACK_ROW_LENGTH, image.width);
+        const currentUnpackRowLen = state.getParameter(_gl.UNPACK_ROW_LENGTH);
+        const currentUnpackSkipPixels = state.getParameter(_gl.UNPACK_SKIP_PIXELS);
+        const currentUnpackSkipRows = state.getParameter(_gl.UNPACK_SKIP_ROWS);
+        state.pixelStorei(_gl.UNPACK_ROW_LENGTH, image.width);
         for (let i = 0, l = updateRanges.length; i < l; i++) {
           const range = updateRanges[i];
           const pixelStart = Math.floor(range.start / componentStride);
@@ -27019,14 +27019,14 @@
           const y = Math.floor(pixelStart / image.width);
           const width = pixelCount;
           const height = 1;
-          state2.pixelStorei(_gl.UNPACK_SKIP_PIXELS, x);
-          state2.pixelStorei(_gl.UNPACK_SKIP_ROWS, y);
-          state2.texSubImage2D(_gl.TEXTURE_2D, 0, x, y, width, height, glFormat, glType, image.data);
+          state.pixelStorei(_gl.UNPACK_SKIP_PIXELS, x);
+          state.pixelStorei(_gl.UNPACK_SKIP_ROWS, y);
+          state.texSubImage2D(_gl.TEXTURE_2D, 0, x, y, width, height, glFormat, glType, image.data);
         }
         texture.clearUpdateRanges();
-        state2.pixelStorei(_gl.UNPACK_ROW_LENGTH, currentUnpackRowLen);
-        state2.pixelStorei(_gl.UNPACK_SKIP_PIXELS, currentUnpackSkipPixels);
-        state2.pixelStorei(_gl.UNPACK_SKIP_ROWS, currentUnpackSkipRows);
+        state.pixelStorei(_gl.UNPACK_ROW_LENGTH, currentUnpackRowLen);
+        state.pixelStorei(_gl.UNPACK_SKIP_PIXELS, currentUnpackSkipPixels);
+        state.pixelStorei(_gl.UNPACK_SKIP_ROWS, currentUnpackSkipRows);
       }
     }
     function uploadTexture(textureProperties, texture, slot) {
@@ -27035,20 +27035,20 @@
       if (texture.isData3DTexture) textureType = _gl.TEXTURE_3D;
       const forceUpload = initTexture(textureProperties, texture);
       const source = texture.source;
-      state2.bindTexture(textureType, textureProperties.__webglTexture, _gl.TEXTURE0 + slot);
+      state.bindTexture(textureType, textureProperties.__webglTexture, _gl.TEXTURE0 + slot);
       const sourceProperties = properties.get(source);
       if (source.version !== sourceProperties.__version || forceUpload === true) {
-        state2.activeTexture(_gl.TEXTURE0 + slot);
+        state.activeTexture(_gl.TEXTURE0 + slot);
         const isImageBitmap = typeof ImageBitmap !== "undefined" && texture.image instanceof ImageBitmap;
         if (isImageBitmap === false) {
           const workingPrimaries = ColorManagement.getPrimaries(ColorManagement.workingColorSpace);
           const texturePrimaries = texture.colorSpace === NoColorSpace ? null : ColorManagement.getPrimaries(texture.colorSpace);
           const unpackConversion = texture.colorSpace === NoColorSpace || workingPrimaries === texturePrimaries ? _gl.NONE : _gl.BROWSER_DEFAULT_WEBGL;
-          state2.pixelStorei(_gl.UNPACK_FLIP_Y_WEBGL, texture.flipY);
-          state2.pixelStorei(_gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, texture.premultiplyAlpha);
-          state2.pixelStorei(_gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, unpackConversion);
+          state.pixelStorei(_gl.UNPACK_FLIP_Y_WEBGL, texture.flipY);
+          state.pixelStorei(_gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, texture.premultiplyAlpha);
+          state.pixelStorei(_gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, unpackConversion);
         }
-        state2.pixelStorei(_gl.UNPACK_ALIGNMENT, texture.unpackAlignment);
+        state.pixelStorei(_gl.UNPACK_ALIGNMENT, texture.unpackAlignment);
         let image = resizeImage(texture.image, false, capabilities.maxTextureSize);
         image = verifyColorSpace(texture, image);
         const glFormat = utils.convert(texture.format, texture.colorSpace);
@@ -27065,43 +27065,43 @@
           glInternalFormat = getInternalDepthFormat(texture.format === DepthStencilFormat, texture.type);
           if (allocateMemory) {
             if (useTexStorage) {
-              state2.texStorage2D(_gl.TEXTURE_2D, 1, glInternalFormat, image.width, image.height);
+              state.texStorage2D(_gl.TEXTURE_2D, 1, glInternalFormat, image.width, image.height);
             } else {
-              state2.texImage2D(_gl.TEXTURE_2D, 0, glInternalFormat, image.width, image.height, 0, glFormat, glType, null);
+              state.texImage2D(_gl.TEXTURE_2D, 0, glInternalFormat, image.width, image.height, 0, glFormat, glType, null);
             }
           }
         } else if (texture.isDataTexture) {
           if (mipmaps.length > 0) {
             if (useTexStorage && allocateMemory) {
-              state2.texStorage2D(_gl.TEXTURE_2D, levels, glInternalFormat, mipmaps[0].width, mipmaps[0].height);
+              state.texStorage2D(_gl.TEXTURE_2D, levels, glInternalFormat, mipmaps[0].width, mipmaps[0].height);
             }
             for (let i = 0, il = mipmaps.length; i < il; i++) {
               mipmap = mipmaps[i];
               if (useTexStorage) {
                 if (dataReady) {
-                  state2.texSubImage2D(_gl.TEXTURE_2D, i, 0, 0, mipmap.width, mipmap.height, glFormat, glType, mipmap.data);
+                  state.texSubImage2D(_gl.TEXTURE_2D, i, 0, 0, mipmap.width, mipmap.height, glFormat, glType, mipmap.data);
                 }
               } else {
-                state2.texImage2D(_gl.TEXTURE_2D, i, glInternalFormat, mipmap.width, mipmap.height, 0, glFormat, glType, mipmap.data);
+                state.texImage2D(_gl.TEXTURE_2D, i, glInternalFormat, mipmap.width, mipmap.height, 0, glFormat, glType, mipmap.data);
               }
             }
             texture.generateMipmaps = false;
           } else {
             if (useTexStorage) {
               if (allocateMemory) {
-                state2.texStorage2D(_gl.TEXTURE_2D, levels, glInternalFormat, image.width, image.height);
+                state.texStorage2D(_gl.TEXTURE_2D, levels, glInternalFormat, image.width, image.height);
               }
               if (dataReady) {
                 updateTexture(texture, image, glFormat, glType);
               }
             } else {
-              state2.texImage2D(_gl.TEXTURE_2D, 0, glInternalFormat, image.width, image.height, 0, glFormat, glType, image.data);
+              state.texImage2D(_gl.TEXTURE_2D, 0, glInternalFormat, image.width, image.height, 0, glFormat, glType, image.data);
             }
           }
         } else if (texture.isCompressedTexture) {
           if (texture.isCompressedArrayTexture) {
             if (useTexStorage && allocateMemory) {
-              state2.texStorage3D(_gl.TEXTURE_2D_ARRAY, levels, glInternalFormat, mipmaps[0].width, mipmaps[0].height, image.depth);
+              state.texStorage3D(_gl.TEXTURE_2D_ARRAY, levels, glInternalFormat, mipmaps[0].width, mipmaps[0].height, image.depth);
             }
             for (let i = 0, il = mipmaps.length; i < il; i++) {
               mipmap = mipmaps[i];
@@ -27116,14 +27116,14 @@
                             layerIndex * layerByteLength / mipmap.data.BYTES_PER_ELEMENT,
                             (layerIndex + 1) * layerByteLength / mipmap.data.BYTES_PER_ELEMENT
                           );
-                          state2.compressedTexSubImage3D(_gl.TEXTURE_2D_ARRAY, i, 0, 0, layerIndex, mipmap.width, mipmap.height, 1, glFormat, layerData);
+                          state.compressedTexSubImage3D(_gl.TEXTURE_2D_ARRAY, i, 0, 0, layerIndex, mipmap.width, mipmap.height, 1, glFormat, layerData);
                         }
                       } else {
-                        state2.compressedTexSubImage3D(_gl.TEXTURE_2D_ARRAY, i, 0, 0, 0, mipmap.width, mipmap.height, image.depth, glFormat, mipmap.data);
+                        state.compressedTexSubImage3D(_gl.TEXTURE_2D_ARRAY, i, 0, 0, 0, mipmap.width, mipmap.height, image.depth, glFormat, mipmap.data);
                       }
                     }
                   } else {
-                    state2.compressedTexImage3D(_gl.TEXTURE_2D_ARRAY, i, glInternalFormat, mipmap.width, mipmap.height, image.depth, 0, mipmap.data, 0, 0);
+                    state.compressedTexImage3D(_gl.TEXTURE_2D_ARRAY, i, glInternalFormat, mipmap.width, mipmap.height, image.depth, 0, mipmap.data, 0, 0);
                   }
                 } else {
                   warn("WebGLRenderer: Attempt to load unsupported compressed texture format in .uploadTexture()");
@@ -27131,17 +27131,17 @@
               } else {
                 if (useTexStorage) {
                   if (dataReady) {
-                    state2.texSubImage3D(_gl.TEXTURE_2D_ARRAY, i, 0, 0, 0, mipmap.width, mipmap.height, image.depth, glFormat, glType, mipmap.data);
+                    state.texSubImage3D(_gl.TEXTURE_2D_ARRAY, i, 0, 0, 0, mipmap.width, mipmap.height, image.depth, glFormat, glType, mipmap.data);
                   }
                 } else {
-                  state2.texImage3D(_gl.TEXTURE_2D_ARRAY, i, glInternalFormat, mipmap.width, mipmap.height, image.depth, 0, glFormat, glType, mipmap.data);
+                  state.texImage3D(_gl.TEXTURE_2D_ARRAY, i, glInternalFormat, mipmap.width, mipmap.height, image.depth, 0, glFormat, glType, mipmap.data);
                 }
               }
             }
             if (texture.layerUpdates.size > 0) texture.clearLayerUpdates();
           } else {
             if (useTexStorage && allocateMemory) {
-              state2.texStorage2D(_gl.TEXTURE_2D, levels, glInternalFormat, mipmaps[0].width, mipmaps[0].height);
+              state.texStorage2D(_gl.TEXTURE_2D, levels, glInternalFormat, mipmaps[0].width, mipmaps[0].height);
             }
             for (let i = 0, il = mipmaps.length; i < il; i++) {
               mipmap = mipmaps[i];
@@ -27149,10 +27149,10 @@
                 if (glFormat !== null) {
                   if (useTexStorage) {
                     if (dataReady) {
-                      state2.compressedTexSubImage2D(_gl.TEXTURE_2D, i, 0, 0, mipmap.width, mipmap.height, glFormat, mipmap.data);
+                      state.compressedTexSubImage2D(_gl.TEXTURE_2D, i, 0, 0, mipmap.width, mipmap.height, glFormat, mipmap.data);
                     }
                   } else {
-                    state2.compressedTexImage2D(_gl.TEXTURE_2D, i, glInternalFormat, mipmap.width, mipmap.height, 0, mipmap.data);
+                    state.compressedTexImage2D(_gl.TEXTURE_2D, i, glInternalFormat, mipmap.width, mipmap.height, 0, mipmap.data);
                   }
                 } else {
                   warn("WebGLRenderer: Attempt to load unsupported compressed texture format in .uploadTexture()");
@@ -27160,10 +27160,10 @@
               } else {
                 if (useTexStorage) {
                   if (dataReady) {
-                    state2.texSubImage2D(_gl.TEXTURE_2D, i, 0, 0, mipmap.width, mipmap.height, glFormat, glType, mipmap.data);
+                    state.texSubImage2D(_gl.TEXTURE_2D, i, 0, 0, mipmap.width, mipmap.height, glFormat, glType, mipmap.data);
                   }
                 } else {
-                  state2.texImage2D(_gl.TEXTURE_2D, i, glInternalFormat, mipmap.width, mipmap.height, 0, glFormat, glType, mipmap.data);
+                  state.texImage2D(_gl.TEXTURE_2D, i, glInternalFormat, mipmap.width, mipmap.height, 0, glFormat, glType, mipmap.data);
                 }
               }
             }
@@ -27171,7 +27171,7 @@
         } else if (texture.isDataArrayTexture) {
           if (useTexStorage) {
             if (allocateMemory) {
-              state2.texStorage3D(_gl.TEXTURE_2D_ARRAY, levels, glInternalFormat, image.width, image.height, image.depth);
+              state.texStorage3D(_gl.TEXTURE_2D_ARRAY, levels, glInternalFormat, image.width, image.height, image.depth);
             }
             if (dataReady) {
               if (texture.layerUpdates.size > 0) {
@@ -27181,35 +27181,35 @@
                     layerIndex * layerByteLength / image.data.BYTES_PER_ELEMENT,
                     (layerIndex + 1) * layerByteLength / image.data.BYTES_PER_ELEMENT
                   );
-                  state2.texSubImage3D(_gl.TEXTURE_2D_ARRAY, 0, 0, 0, layerIndex, image.width, image.height, 1, glFormat, glType, layerData);
+                  state.texSubImage3D(_gl.TEXTURE_2D_ARRAY, 0, 0, 0, layerIndex, image.width, image.height, 1, glFormat, glType, layerData);
                 }
                 texture.clearLayerUpdates();
               } else {
-                state2.texSubImage3D(_gl.TEXTURE_2D_ARRAY, 0, 0, 0, 0, image.width, image.height, image.depth, glFormat, glType, image.data);
+                state.texSubImage3D(_gl.TEXTURE_2D_ARRAY, 0, 0, 0, 0, image.width, image.height, image.depth, glFormat, glType, image.data);
               }
             }
           } else {
-            state2.texImage3D(_gl.TEXTURE_2D_ARRAY, 0, glInternalFormat, image.width, image.height, image.depth, 0, glFormat, glType, image.data);
+            state.texImage3D(_gl.TEXTURE_2D_ARRAY, 0, glInternalFormat, image.width, image.height, image.depth, 0, glFormat, glType, image.data);
           }
         } else if (texture.isData3DTexture) {
           if (useTexStorage) {
             if (allocateMemory) {
-              state2.texStorage3D(_gl.TEXTURE_3D, levels, glInternalFormat, image.width, image.height, image.depth);
+              state.texStorage3D(_gl.TEXTURE_3D, levels, glInternalFormat, image.width, image.height, image.depth);
             }
             if (dataReady) {
-              state2.texSubImage3D(_gl.TEXTURE_3D, 0, 0, 0, 0, image.width, image.height, image.depth, glFormat, glType, image.data);
+              state.texSubImage3D(_gl.TEXTURE_3D, 0, 0, 0, 0, image.width, image.height, image.depth, glFormat, glType, image.data);
             }
           } else {
-            state2.texImage3D(_gl.TEXTURE_3D, 0, glInternalFormat, image.width, image.height, image.depth, 0, glFormat, glType, image.data);
+            state.texImage3D(_gl.TEXTURE_3D, 0, glInternalFormat, image.width, image.height, image.depth, 0, glFormat, glType, image.data);
           }
         } else if (texture.isFramebufferTexture) {
           if (allocateMemory) {
             if (useTexStorage) {
-              state2.texStorage2D(_gl.TEXTURE_2D, levels, glInternalFormat, image.width, image.height);
+              state.texStorage2D(_gl.TEXTURE_2D, levels, glInternalFormat, image.width, image.height);
             } else {
               let width = image.width, height = image.height;
               for (let i = 0; i < levels; i++) {
-                state2.texImage2D(_gl.TEXTURE_2D, i, glInternalFormat, width, height, 0, glFormat, glType, null);
+                state.texImage2D(_gl.TEXTURE_2D, i, glInternalFormat, width, height, 0, glFormat, glType, null);
                 width >>= 1;
                 height >>= 1;
               }
@@ -27252,16 +27252,16 @@
           if (mipmaps.length > 0) {
             if (useTexStorage && allocateMemory) {
               const dimensions = getDimensions(mipmaps[0]);
-              state2.texStorage2D(_gl.TEXTURE_2D, levels, glInternalFormat, dimensions.width, dimensions.height);
+              state.texStorage2D(_gl.TEXTURE_2D, levels, glInternalFormat, dimensions.width, dimensions.height);
             }
             for (let i = 0, il = mipmaps.length; i < il; i++) {
               mipmap = mipmaps[i];
               if (useTexStorage) {
                 if (dataReady) {
-                  state2.texSubImage2D(_gl.TEXTURE_2D, i, 0, 0, glFormat, glType, mipmap);
+                  state.texSubImage2D(_gl.TEXTURE_2D, i, 0, 0, glFormat, glType, mipmap);
                 }
               } else {
-                state2.texImage2D(_gl.TEXTURE_2D, i, glInternalFormat, glFormat, glType, mipmap);
+                state.texImage2D(_gl.TEXTURE_2D, i, glInternalFormat, glFormat, glType, mipmap);
               }
             }
             texture.generateMipmaps = false;
@@ -27269,13 +27269,13 @@
             if (useTexStorage) {
               if (allocateMemory) {
                 const dimensions = getDimensions(image);
-                state2.texStorage2D(_gl.TEXTURE_2D, levels, glInternalFormat, dimensions.width, dimensions.height);
+                state.texStorage2D(_gl.TEXTURE_2D, levels, glInternalFormat, dimensions.width, dimensions.height);
               }
               if (dataReady) {
-                state2.texSubImage2D(_gl.TEXTURE_2D, 0, 0, 0, glFormat, glType, image);
+                state.texSubImage2D(_gl.TEXTURE_2D, 0, 0, 0, glFormat, glType, image);
               }
             } else {
-              state2.texImage2D(_gl.TEXTURE_2D, 0, glInternalFormat, glFormat, glType, image);
+              state.texImage2D(_gl.TEXTURE_2D, 0, glInternalFormat, glFormat, glType, image);
             }
           }
         }
@@ -27291,17 +27291,17 @@
       if (texture.image.length !== 6) return;
       const forceUpload = initTexture(textureProperties, texture);
       const source = texture.source;
-      state2.bindTexture(_gl.TEXTURE_CUBE_MAP, textureProperties.__webglTexture, _gl.TEXTURE0 + slot);
+      state.bindTexture(_gl.TEXTURE_CUBE_MAP, textureProperties.__webglTexture, _gl.TEXTURE0 + slot);
       const sourceProperties = properties.get(source);
       if (source.version !== sourceProperties.__version || forceUpload === true) {
-        state2.activeTexture(_gl.TEXTURE0 + slot);
+        state.activeTexture(_gl.TEXTURE0 + slot);
         const workingPrimaries = ColorManagement.getPrimaries(ColorManagement.workingColorSpace);
         const texturePrimaries = texture.colorSpace === NoColorSpace ? null : ColorManagement.getPrimaries(texture.colorSpace);
         const unpackConversion = texture.colorSpace === NoColorSpace || workingPrimaries === texturePrimaries ? _gl.NONE : _gl.BROWSER_DEFAULT_WEBGL;
-        state2.pixelStorei(_gl.UNPACK_FLIP_Y_WEBGL, texture.flipY);
-        state2.pixelStorei(_gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, texture.premultiplyAlpha);
-        state2.pixelStorei(_gl.UNPACK_ALIGNMENT, texture.unpackAlignment);
-        state2.pixelStorei(_gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, unpackConversion);
+        state.pixelStorei(_gl.UNPACK_FLIP_Y_WEBGL, texture.flipY);
+        state.pixelStorei(_gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, texture.premultiplyAlpha);
+        state.pixelStorei(_gl.UNPACK_ALIGNMENT, texture.unpackAlignment);
+        state.pixelStorei(_gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, unpackConversion);
         const isCompressed = texture.isCompressedTexture || texture.image[0].isCompressedTexture;
         const isDataTexture = texture.image[0] && texture.image[0].isDataTexture;
         const cubeImage = [];
@@ -27325,16 +27325,16 @@
           glInternalFormat = getInternalDepthFormat(texture.format === DepthStencilFormat, texture.type);
           if (allocateMemory) {
             if (useTexStorage) {
-              state2.texStorage2D(_gl.TEXTURE_CUBE_MAP, 1, glInternalFormat, image.width, image.height);
+              state.texStorage2D(_gl.TEXTURE_CUBE_MAP, 1, glInternalFormat, image.width, image.height);
             } else {
               for (let i = 0; i < 6; i++) {
-                state2.texImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, glInternalFormat, image.width, image.height, 0, glFormat, glType, null);
+                state.texImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, glInternalFormat, image.width, image.height, 0, glFormat, glType, null);
               }
             }
           }
         } else if (isCompressed) {
           if (useTexStorage && allocateMemory) {
-            state2.texStorage2D(_gl.TEXTURE_CUBE_MAP, levels, glInternalFormat, image.width, image.height);
+            state.texStorage2D(_gl.TEXTURE_CUBE_MAP, levels, glInternalFormat, image.width, image.height);
           }
           for (let i = 0; i < 6; i++) {
             mipmaps = cubeImage[i].mipmaps;
@@ -27344,10 +27344,10 @@
                 if (glFormat !== null) {
                   if (useTexStorage) {
                     if (dataReady) {
-                      state2.compressedTexSubImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, j, 0, 0, mipmap.width, mipmap.height, glFormat, mipmap.data);
+                      state.compressedTexSubImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, j, 0, 0, mipmap.width, mipmap.height, glFormat, mipmap.data);
                     }
                   } else {
-                    state2.compressedTexImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, j, glInternalFormat, mipmap.width, mipmap.height, 0, mipmap.data);
+                    state.compressedTexImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, j, glInternalFormat, mipmap.width, mipmap.height, 0, mipmap.data);
                   }
                 } else {
                   warn("WebGLRenderer: Attempt to load unsupported compressed texture format in .setTextureCube()");
@@ -27355,10 +27355,10 @@
               } else {
                 if (useTexStorage) {
                   if (dataReady) {
-                    state2.texSubImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, j, 0, 0, mipmap.width, mipmap.height, glFormat, glType, mipmap.data);
+                    state.texSubImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, j, 0, 0, mipmap.width, mipmap.height, glFormat, glType, mipmap.data);
                   }
                 } else {
-                  state2.texImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, j, glInternalFormat, mipmap.width, mipmap.height, 0, glFormat, glType, mipmap.data);
+                  state.texImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, j, glInternalFormat, mipmap.width, mipmap.height, 0, glFormat, glType, mipmap.data);
                 }
               }
             }
@@ -27368,44 +27368,44 @@
           if (useTexStorage && allocateMemory) {
             if (mipmaps.length > 0) levels++;
             const dimensions = getDimensions(cubeImage[0]);
-            state2.texStorage2D(_gl.TEXTURE_CUBE_MAP, levels, glInternalFormat, dimensions.width, dimensions.height);
+            state.texStorage2D(_gl.TEXTURE_CUBE_MAP, levels, glInternalFormat, dimensions.width, dimensions.height);
           }
           for (let i = 0; i < 6; i++) {
             if (isDataTexture) {
               if (useTexStorage) {
                 if (dataReady) {
-                  state2.texSubImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, 0, 0, cubeImage[i].width, cubeImage[i].height, glFormat, glType, cubeImage[i].data);
+                  state.texSubImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, 0, 0, cubeImage[i].width, cubeImage[i].height, glFormat, glType, cubeImage[i].data);
                 }
               } else {
-                state2.texImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, glInternalFormat, cubeImage[i].width, cubeImage[i].height, 0, glFormat, glType, cubeImage[i].data);
+                state.texImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, glInternalFormat, cubeImage[i].width, cubeImage[i].height, 0, glFormat, glType, cubeImage[i].data);
               }
               for (let j = 0; j < mipmaps.length; j++) {
                 const mipmap = mipmaps[j];
                 const mipmapImage = mipmap.image[i].image;
                 if (useTexStorage) {
                   if (dataReady) {
-                    state2.texSubImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, j + 1, 0, 0, mipmapImage.width, mipmapImage.height, glFormat, glType, mipmapImage.data);
+                    state.texSubImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, j + 1, 0, 0, mipmapImage.width, mipmapImage.height, glFormat, glType, mipmapImage.data);
                   }
                 } else {
-                  state2.texImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, j + 1, glInternalFormat, mipmapImage.width, mipmapImage.height, 0, glFormat, glType, mipmapImage.data);
+                  state.texImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, j + 1, glInternalFormat, mipmapImage.width, mipmapImage.height, 0, glFormat, glType, mipmapImage.data);
                 }
               }
             } else {
               if (useTexStorage) {
                 if (dataReady) {
-                  state2.texSubImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, 0, 0, glFormat, glType, cubeImage[i]);
+                  state.texSubImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, 0, 0, glFormat, glType, cubeImage[i]);
                 }
               } else {
-                state2.texImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, glInternalFormat, glFormat, glType, cubeImage[i]);
+                state.texImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, glInternalFormat, glFormat, glType, cubeImage[i]);
               }
               for (let j = 0; j < mipmaps.length; j++) {
                 const mipmap = mipmaps[j];
                 if (useTexStorage) {
                   if (dataReady) {
-                    state2.texSubImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, j + 1, 0, 0, glFormat, glType, mipmap.image[i]);
+                    state.texSubImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, j + 1, 0, 0, glFormat, glType, mipmap.image[i]);
                   }
                 } else {
-                  state2.texImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, j + 1, glInternalFormat, glFormat, glType, mipmap.image[i]);
+                  state.texImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, j + 1, glInternalFormat, glFormat, glType, mipmap.image[i]);
                 }
               }
             }
@@ -27430,18 +27430,18 @@
         const width = Math.max(1, renderTarget.width >> level);
         const height = Math.max(1, renderTarget.height >> level);
         if (textureTarget === _gl.TEXTURE_3D || textureTarget === _gl.TEXTURE_2D_ARRAY) {
-          state2.texImage3D(textureTarget, level, glInternalFormat, width, height, renderTarget.depth, 0, glFormat, glType, null);
+          state.texImage3D(textureTarget, level, glInternalFormat, width, height, renderTarget.depth, 0, glFormat, glType, null);
         } else {
-          state2.texImage2D(textureTarget, level, glInternalFormat, width, height, 0, glFormat, glType, null);
+          state.texImage2D(textureTarget, level, glInternalFormat, width, height, 0, glFormat, glType, null);
         }
       }
-      state2.bindFramebuffer(_gl.FRAMEBUFFER, framebuffer);
+      state.bindFramebuffer(_gl.FRAMEBUFFER, framebuffer);
       if (useMultisampledRTT(renderTarget)) {
         multisampledRTTExt.framebufferTexture2DMultisampleEXT(_gl.FRAMEBUFFER, attachment, textureTarget, textureProperties.__webglTexture, 0, getRenderTargetSamples(renderTarget));
       } else if (textureTarget === _gl.TEXTURE_2D || textureTarget >= _gl.TEXTURE_CUBE_MAP_POSITIVE_X && textureTarget <= _gl.TEXTURE_CUBE_MAP_NEGATIVE_Z) {
         _gl.framebufferTexture2D(_gl.FRAMEBUFFER, attachment, textureTarget, textureProperties.__webglTexture, level);
       }
-      state2.bindFramebuffer(_gl.FRAMEBUFFER, null);
+      state.bindFramebuffer(_gl.FRAMEBUFFER, null);
     }
     function setupRenderBufferStorage(renderbuffer, renderTarget, useMultisample) {
       _gl.bindRenderbuffer(_gl.RENDERBUFFER, renderbuffer);
@@ -27478,7 +27478,7 @@
     }
     function setupDepthTexture(framebuffer, renderTarget, cubeFace) {
       const isCube = renderTarget.isWebGLCubeRenderTarget === true;
-      state2.bindFramebuffer(_gl.FRAMEBUFFER, framebuffer);
+      state.bindFramebuffer(_gl.FRAMEBUFFER, framebuffer);
       if (!(renderTarget.depthTexture && renderTarget.depthTexture.isDepthTexture)) {
         throw new Error("THREE.WebGLTextures: renderTarget.depthTexture must be an instance of THREE.DepthTexture.");
       }
@@ -27551,7 +27551,7 @@
         if (isCube) {
           renderTargetProperties.__webglDepthbuffer = [];
           for (let i = 0; i < 6; i++) {
-            state2.bindFramebuffer(_gl.FRAMEBUFFER, renderTargetProperties.__webglFramebuffer[i]);
+            state.bindFramebuffer(_gl.FRAMEBUFFER, renderTargetProperties.__webglFramebuffer[i]);
             if (renderTargetProperties.__webglDepthbuffer[i] === void 0) {
               renderTargetProperties.__webglDepthbuffer[i] = _gl.createRenderbuffer();
               setupRenderBufferStorage(renderTargetProperties.__webglDepthbuffer[i], renderTarget, false);
@@ -27565,9 +27565,9 @@
         } else {
           const mipmaps = renderTarget.texture.mipmaps;
           if (mipmaps.length > 0) {
-            state2.bindFramebuffer(_gl.FRAMEBUFFER, renderTargetProperties.__webglFramebuffer[0]);
+            state.bindFramebuffer(_gl.FRAMEBUFFER, renderTargetProperties.__webglFramebuffer[0]);
           } else {
-            state2.bindFramebuffer(_gl.FRAMEBUFFER, renderTargetProperties.__webglFramebuffer);
+            state.bindFramebuffer(_gl.FRAMEBUFFER, renderTargetProperties.__webglFramebuffer);
           }
           if (renderTargetProperties.__webglDepthbuffer === void 0) {
             renderTargetProperties.__webglDepthbuffer = _gl.createRenderbuffer();
@@ -27580,7 +27580,7 @@
           }
         }
       }
-      state2.bindFramebuffer(_gl.FRAMEBUFFER, null);
+      state.bindFramebuffer(_gl.FRAMEBUFFER, null);
     }
     function rebindTextures(renderTarget, colorTexture, depthTexture) {
       const renderTargetProperties = properties.get(renderTarget);
@@ -27640,7 +27640,7 @@
         if (renderTarget.samples > 0 && useMultisampledRTT(renderTarget) === false) {
           renderTargetProperties.__webglMultisampledFramebuffer = _gl.createFramebuffer();
           renderTargetProperties.__webglColorRenderbuffer = [];
-          state2.bindFramebuffer(_gl.FRAMEBUFFER, renderTargetProperties.__webglMultisampledFramebuffer);
+          state.bindFramebuffer(_gl.FRAMEBUFFER, renderTargetProperties.__webglMultisampledFramebuffer);
           for (let i = 0; i < textures.length; i++) {
             const texture2 = textures[i];
             renderTargetProperties.__webglColorRenderbuffer[i] = _gl.createRenderbuffer();
@@ -27657,11 +27657,11 @@
             renderTargetProperties.__webglDepthRenderbuffer = _gl.createRenderbuffer();
             setupRenderBufferStorage(renderTargetProperties.__webglDepthRenderbuffer, renderTarget, true);
           }
-          state2.bindFramebuffer(_gl.FRAMEBUFFER, null);
+          state.bindFramebuffer(_gl.FRAMEBUFFER, null);
         }
       }
       if (isCube) {
-        state2.bindTexture(_gl.TEXTURE_CUBE_MAP, textureProperties.__webglTexture);
+        state.bindTexture(_gl.TEXTURE_CUBE_MAP, textureProperties.__webglTexture);
         setTextureParameters(_gl.TEXTURE_CUBE_MAP, texture);
         for (let i = 0; i < 6; i++) {
           if (texture.mipmaps.length > 0) {
@@ -27677,7 +27677,7 @@
         } else if (texture.mipmaps.length > 0) {
           _gl.texParameteri(_gl.TEXTURE_CUBE_MAP, _gl.TEXTURE_MAX_LEVEL, texture.mipmaps.length - 1);
         }
-        state2.unbindTexture();
+        state.unbindTexture();
       } else if (isMultipleRenderTargets) {
         for (let i = 0, il = textures.length; i < il; i++) {
           const attachment = textures[i];
@@ -27686,20 +27686,20 @@
           if (renderTarget.isWebGL3DRenderTarget || renderTarget.isWebGLArrayRenderTarget) {
             glTextureType = renderTarget.isWebGL3DRenderTarget ? _gl.TEXTURE_3D : _gl.TEXTURE_2D_ARRAY;
           }
-          state2.bindTexture(glTextureType, attachmentProperties.__webglTexture);
+          state.bindTexture(glTextureType, attachmentProperties.__webglTexture);
           setTextureParameters(glTextureType, attachment);
           setupFrameBufferTexture(renderTargetProperties.__webglFramebuffer, renderTarget, attachment, _gl.COLOR_ATTACHMENT0 + i, glTextureType, 0);
           if (textureNeedsGenerateMipmaps(attachment)) {
             generateMipmap(glTextureType);
           }
         }
-        state2.unbindTexture();
+        state.unbindTexture();
       } else {
         let glTextureType = _gl.TEXTURE_2D;
         if (renderTarget.isWebGL3DRenderTarget || renderTarget.isWebGLArrayRenderTarget) {
           glTextureType = renderTarget.isWebGL3DRenderTarget ? _gl.TEXTURE_3D : _gl.TEXTURE_2D_ARRAY;
         }
-        state2.bindTexture(glTextureType, textureProperties.__webglTexture);
+        state.bindTexture(glTextureType, textureProperties.__webglTexture);
         setTextureParameters(glTextureType, texture);
         if (texture.mipmaps.length > 0) {
           for (let level = 0; level < texture.mipmaps.length; level++) {
@@ -27713,7 +27713,7 @@
         } else if (texture.mipmaps.length > 0) {
           _gl.texParameteri(glTextureType, _gl.TEXTURE_MAX_LEVEL, texture.mipmaps.length - 1);
         }
-        state2.unbindTexture();
+        state.unbindTexture();
       }
       if (renderTarget.depthBuffer) {
         setupDepthRenderbuffer(renderTarget);
@@ -27726,9 +27726,9 @@
         if (textureNeedsGenerateMipmaps(texture) && texture.mipmapsAutoUpdate === true) {
           const targetType = getTargetType(renderTarget);
           const webglTexture = properties.get(texture).__webglTexture;
-          state2.bindTexture(targetType, webglTexture);
+          state.bindTexture(targetType, webglTexture);
           generateMipmap(targetType);
-          state2.unbindTexture();
+          state.unbindTexture();
         }
       }
     }
@@ -27745,18 +27745,18 @@
           const isMultipleRenderTargets = textures.length > 1;
           if (isMultipleRenderTargets) {
             for (let i = 0; i < textures.length; i++) {
-              state2.bindFramebuffer(_gl.FRAMEBUFFER, renderTargetProperties.__webglMultisampledFramebuffer);
+              state.bindFramebuffer(_gl.FRAMEBUFFER, renderTargetProperties.__webglMultisampledFramebuffer);
               _gl.framebufferRenderbuffer(_gl.FRAMEBUFFER, _gl.COLOR_ATTACHMENT0 + i, _gl.RENDERBUFFER, null);
-              state2.bindFramebuffer(_gl.FRAMEBUFFER, renderTargetProperties.__webglFramebuffer);
+              state.bindFramebuffer(_gl.FRAMEBUFFER, renderTargetProperties.__webglFramebuffer);
               _gl.framebufferTexture2D(_gl.DRAW_FRAMEBUFFER, _gl.COLOR_ATTACHMENT0 + i, _gl.TEXTURE_2D, null, 0);
             }
           }
-          state2.bindFramebuffer(_gl.READ_FRAMEBUFFER, renderTargetProperties.__webglMultisampledFramebuffer);
+          state.bindFramebuffer(_gl.READ_FRAMEBUFFER, renderTargetProperties.__webglMultisampledFramebuffer);
           const mipmaps = renderTarget.texture.mipmaps;
           if (mipmaps.length > 0) {
-            state2.bindFramebuffer(_gl.DRAW_FRAMEBUFFER, renderTargetProperties.__webglFramebuffer[0]);
+            state.bindFramebuffer(_gl.DRAW_FRAMEBUFFER, renderTargetProperties.__webglFramebuffer[0]);
           } else {
-            state2.bindFramebuffer(_gl.DRAW_FRAMEBUFFER, renderTargetProperties.__webglFramebuffer);
+            state.bindFramebuffer(_gl.DRAW_FRAMEBUFFER, renderTargetProperties.__webglFramebuffer);
           }
           for (let i = 0; i < textures.length; i++) {
             if (renderTarget.resolveDepthBuffer) {
@@ -27778,18 +27778,18 @@
               _gl.invalidateFramebuffer(_gl.READ_FRAMEBUFFER, invalidationArrayRead);
             }
           }
-          state2.bindFramebuffer(_gl.READ_FRAMEBUFFER, null);
-          state2.bindFramebuffer(_gl.DRAW_FRAMEBUFFER, null);
+          state.bindFramebuffer(_gl.READ_FRAMEBUFFER, null);
+          state.bindFramebuffer(_gl.DRAW_FRAMEBUFFER, null);
           if (isMultipleRenderTargets) {
             for (let i = 0; i < textures.length; i++) {
-              state2.bindFramebuffer(_gl.FRAMEBUFFER, renderTargetProperties.__webglMultisampledFramebuffer);
+              state.bindFramebuffer(_gl.FRAMEBUFFER, renderTargetProperties.__webglMultisampledFramebuffer);
               _gl.framebufferRenderbuffer(_gl.FRAMEBUFFER, _gl.COLOR_ATTACHMENT0 + i, _gl.RENDERBUFFER, renderTargetProperties.__webglColorRenderbuffer[i]);
               const webglTexture = properties.get(textures[i]).__webglTexture;
-              state2.bindFramebuffer(_gl.FRAMEBUFFER, renderTargetProperties.__webglFramebuffer);
+              state.bindFramebuffer(_gl.FRAMEBUFFER, renderTargetProperties.__webglFramebuffer);
               _gl.framebufferTexture2D(_gl.DRAW_FRAMEBUFFER, _gl.COLOR_ATTACHMENT0 + i, _gl.TEXTURE_2D, webglTexture, 0);
             }
           }
-          state2.bindFramebuffer(_gl.DRAW_FRAMEBUFFER, renderTargetProperties.__webglMultisampledFramebuffer);
+          state.bindFramebuffer(_gl.DRAW_FRAMEBUFFER, renderTargetProperties.__webglMultisampledFramebuffer);
         } else {
           if (renderTarget.depthBuffer && renderTarget.storeMultisampledDepthBuffer === false && supportsInvalidateFramebuffer) {
             const depthStyle = renderTarget.stencilBuffer ? _gl.DEPTH_STENCIL_ATTACHMENT : _gl.DEPTH_ATTACHMENT;
@@ -28862,12 +28862,12 @@ void main() {
       refreshMaterialUniforms
     };
   }
-  function WebGLUniformsGroups(gl, info, capabilities, state2) {
+  function WebGLUniformsGroups(gl, info, capabilities, state) {
     let buffers = {};
     let updateList = {};
     function bind(uniformsGroup, program) {
       const webglProgram = program.program;
-      state2.uniformBlockBinding(uniformsGroup, webglProgram, buffers[uniformsGroup.id]);
+      state.uniformBlockBinding(uniformsGroup, webglProgram, buffers[uniformsGroup.id]);
     }
     function update(uniformsGroup, program) {
       let buffer = buffers[uniformsGroup.id];
@@ -28878,7 +28878,7 @@ void main() {
         uniformsGroup.addEventListener("dispose", onUniformsGroupsDispose);
       }
       const webglProgram = program.program;
-      state2.updateUBOMapping(uniformsGroup, webglProgram);
+      state.updateUBOMapping(uniformsGroup, webglProgram);
       const frame = info.render.frame;
       if (updateList[uniformsGroup.id] !== frame) {
         updateBufferData(uniformsGroup);
@@ -29740,7 +29740,7 @@ void main() {
       function getContext(contextName, contextAttributes) {
         return canvas.getContext(contextName, contextAttributes);
       }
-      let extensions, capabilities, state2, info;
+      let extensions, capabilities, state, info;
       let properties, textures, environments, attributes, geometries, objects;
       let programCache, materials, renderLists, renderStates, clipping, shadowMap;
       let background, morphtargets, bufferRenderer, indexedBufferRenderer;
@@ -29784,16 +29784,16 @@ void main() {
         extensions.init();
         utils = new WebGLUtils(_gl, extensions);
         capabilities = new WebGLCapabilities(_gl, extensions, parameters, utils);
-        state2 = new WebGLState(_gl, extensions);
+        state = new WebGLState(_gl, extensions);
         if (capabilities.reversedDepthBuffer && reversedDepthBuffer) {
-          state2.buffers.depth.setReversed(true);
+          state.buffers.depth.setReversed(true);
         }
         _scratchFramebuffer = _gl.createFramebuffer();
         _srcFramebuffer = _gl.createFramebuffer();
         _dstFramebuffer = _gl.createFramebuffer();
         info = new WebGLInfo(_gl);
         properties = new WebGLProperties();
-        textures = new WebGLTextures(_gl, extensions, state2, properties, capabilities, utils, info);
+        textures = new WebGLTextures(_gl, extensions, state, properties, capabilities, utils, info);
         environments = new WebGLEnvironments(_this);
         attributes = new WebGLAttributes(_gl);
         bindingStates = new WebGLBindingStates(_gl, attributes);
@@ -29805,9 +29805,9 @@ void main() {
         materials = new WebGLMaterials(_this, properties);
         renderLists = new WebGLRenderLists();
         renderStates = new WebGLRenderStates(extensions);
-        background = new WebGLBackground(_this, environments, state2, objects, _alpha, premultipliedAlpha);
+        background = new WebGLBackground(_this, environments, state, objects, _alpha, premultipliedAlpha);
         shadowMap = new WebGLShadowMap(_this, objects, capabilities);
-        uniformsGroups = new WebGLUniformsGroups(_gl, info, capabilities, state2);
+        uniformsGroups = new WebGLUniformsGroups(_gl, info, capabilities, state);
         bufferRenderer = new WebGLBufferRenderer(_gl, extensions, info);
         indexedBufferRenderer = new WebGLIndexedBufferRenderer(_gl, extensions, info);
         info.programs = programCache.programs;
@@ -29816,7 +29816,7 @@ void main() {
         _this.properties = properties;
         _this.renderLists = renderLists;
         _this.shadowMap = shadowMap;
-        _this.state = state2;
+        _this.state = state;
         _this.info = info;
       }
       if (_outputBufferType !== UnsignedByteType) {
@@ -29905,7 +29905,7 @@ void main() {
         } else {
           _viewport.set(x, y, width, height);
         }
-        state2.viewport(_currentViewport.copy(_viewport).multiplyScalar(getTargetPixelRatio()).round());
+        state.viewport(_currentViewport.copy(_viewport).multiplyScalar(getTargetPixelRatio()).round());
       };
       this.getScissor = function(target) {
         return target.copy(_scissor);
@@ -29916,13 +29916,13 @@ void main() {
         } else {
           _scissor.set(x, y, width, height);
         }
-        state2.scissor(_currentScissor.copy(_scissor).multiplyScalar(getTargetPixelRatio()).round());
+        state.scissor(_currentScissor.copy(_scissor).multiplyScalar(getTargetPixelRatio()).round());
       };
       this.getScissorTest = function() {
         return _scissorTest;
       };
       this.setScissorTest = function(boolean) {
-        state2.setScissorTest(_scissorTest = boolean);
+        state.setScissorTest(_scissorTest = boolean);
       };
       this.setOpaqueSort = function(method) {
         _opaqueSort = method;
@@ -30067,7 +30067,7 @@ void main() {
         if (scene2 === null) scene2 = _emptyScene;
         const frontFaceCW = object.isMesh && object.matrixWorld.determinantAffine() < 0;
         const program = setProgram(camera2, scene2, geometry, material, object);
-        state2.setMaterial(material, frontFaceCW);
+        state.setMaterial(material, frontFaceCW);
         let index = geometry.index;
         let rangeFactor = 1;
         if (material.wireframe === true) {
@@ -30102,7 +30102,7 @@ void main() {
         }
         if (object.isMesh) {
           if (material.wireframe === true) {
-            state2.setLineWidth(material.wireframeLinewidth * getTargetPixelRatio());
+            state.setLineWidth(material.wireframeLinewidth * getTargetPixelRatio());
             renderer2.setMode(_gl.LINES);
           } else {
             renderer2.setMode(_gl.TRIANGLES);
@@ -30110,7 +30110,7 @@ void main() {
         } else if (object.isLine) {
           let lineWidth = material.linewidth;
           if (lineWidth === void 0) lineWidth = 1;
-          state2.setLineWidth(lineWidth * getTargetPixelRatio());
+          state.setLineWidth(lineWidth * getTargetPixelRatio());
           if (object.isLineSegments) {
             renderer2.setMode(_gl.LINES);
           } else if (object.isLineLoop) {
@@ -30431,14 +30431,14 @@ void main() {
         const { opaque: opaqueObjects, transmissive: transmissiveObjects, transparent: transparentObjects } = currentRenderList2;
         currentRenderState.setupLightsView(camera2);
         if (_clippingEnabled === true) clipping.setGlobalState(_this.clippingPlanes, camera2);
-        if (viewport) state2.viewport(_currentViewport.copy(viewport));
+        if (viewport) state.viewport(_currentViewport.copy(viewport));
         if (opaqueObjects.length > 0) renderObjects(opaqueObjects, scene2, camera2);
         if (transmissiveObjects.length > 0) renderObjects(transmissiveObjects, scene2, camera2);
         if (transparentObjects.length > 0) renderObjects(transparentObjects, scene2, camera2);
-        state2.buffers.depth.setTest(true);
-        state2.buffers.depth.setMask(true);
-        state2.buffers.color.setMask(true);
-        state2.setPolygonOffset(false);
+        state.buffers.depth.setTest(true);
+        state.buffers.depth.setMask(true);
+        state.buffers.color.setMask(true);
+        state.setPolygonOffset(false);
       }
       function renderTransmissionPass(opaqueObjects, transmissiveObjects, scene2, camera2) {
         const overrideMaterial = scene2.isScene === true ? scene2.overrideMaterial : null;
@@ -30752,7 +30752,7 @@ void main() {
         let refreshMaterial = false;
         let refreshLights = false;
         const p_uniforms = program.getUniforms(), m_uniforms = materialProperties.uniforms;
-        if (state2.useProgram(program.program)) {
+        if (state.useProgram(program.program)) {
           refreshProgram = true;
           refreshMaterial = true;
           refreshLights = true;
@@ -30762,7 +30762,7 @@ void main() {
           refreshMaterial = true;
         }
         if (refreshProgram || _currentCamera !== camera2) {
-          const reversedDepthBuffer2 = state2.buffers.depth.getReversed();
+          const reversedDepthBuffer2 = state.buffers.depth.getReversed();
           if (reversedDepthBuffer2 && camera2.reversedDepth !== true) {
             camera2._reversedDepth = true;
             camera2.updateProjectionMatrix();
@@ -30935,13 +30935,13 @@ void main() {
         if (renderTarget) {
           const renderTargetProperties = properties.get(renderTarget);
           if (renderTargetProperties.__useDefaultFramebuffer !== void 0) {
-            state2.bindFramebuffer(_gl.FRAMEBUFFER, renderTargetProperties.__webglFramebuffer);
+            state.bindFramebuffer(_gl.FRAMEBUFFER, renderTargetProperties.__webglFramebuffer);
             _currentViewport.copy(renderTarget.viewport);
             _currentScissor.copy(renderTarget.scissor);
             _currentScissorTest = renderTarget.scissorTest;
-            state2.viewport(_currentViewport);
-            state2.scissor(_currentScissor);
-            state2.setScissorTest(_currentScissorTest);
+            state.viewport(_currentViewport);
+            state.scissor(_currentScissor);
+            state.setScissorTest(_currentScissorTest);
             _currentMaterialId = -1;
             return;
           } else if (renderTargetProperties.__webglFramebuffer === void 0) {
@@ -30989,13 +30989,13 @@ void main() {
         if (activeMipmapLevel !== 0) {
           framebuffer = _scratchFramebuffer;
         }
-        const framebufferBound = state2.bindFramebuffer(_gl.FRAMEBUFFER, framebuffer);
+        const framebufferBound = state.bindFramebuffer(_gl.FRAMEBUFFER, framebuffer);
         if (framebufferBound) {
-          state2.drawBuffers(renderTarget, framebuffer);
+          state.drawBuffers(renderTarget, framebuffer);
         }
-        state2.viewport(_currentViewport);
-        state2.scissor(_currentScissor);
-        state2.setScissorTest(_currentScissorTest);
+        state.viewport(_currentViewport);
+        state.scissor(_currentScissor);
+        state.setScissorTest(_currentScissorTest);
         if (isCube) {
           const textureProperties = properties.get(renderTarget.texture);
           _gl.framebufferTexture2D(_gl.FRAMEBUFFER, _gl.COLOR_ATTACHMENT0, _gl.TEXTURE_CUBE_MAP_POSITIVE_X + activeCubeFace, textureProperties.__webglTexture, activeMipmapLevel);
@@ -31032,7 +31032,7 @@ void main() {
           if (Array.isArray(framebuffer)) framebuffer = framebuffer[0];
         }
         if (framebuffer) {
-          state2.bindFramebuffer(_gl.FRAMEBUFFER, framebuffer);
+          state.bindFramebuffer(_gl.FRAMEBUFFER, framebuffer);
           try {
             const texture = renderTarget.textures[textureIndex];
             const textureFormat = texture.format;
@@ -31052,7 +31052,7 @@ void main() {
             }
           } finally {
             const framebuffer2 = _currentRenderTarget !== null ? properties.get(_currentRenderTarget).__webglFramebuffer : null;
-            state2.bindFramebuffer(_gl.FRAMEBUFFER, framebuffer2);
+            state.bindFramebuffer(_gl.FRAMEBUFFER, framebuffer2);
           }
         }
       };
@@ -31067,7 +31067,7 @@ void main() {
         }
         if (framebuffer) {
           if (x >= 0 && x <= renderTarget.width - width && (y >= 0 && y <= renderTarget.height - height)) {
-            state2.bindFramebuffer(_gl.FRAMEBUFFER, framebuffer);
+            state.bindFramebuffer(_gl.FRAMEBUFFER, framebuffer);
             const texture = renderTarget.textures[textureIndex];
             const textureFormat = texture.format;
             const textureType = texture.type;
@@ -31085,7 +31085,7 @@ void main() {
             _gl.readPixels(x, y, width, height, utils.convert(textureFormat), utils.convert(textureType), 0);
             _gl.bindBuffer(_gl.PIXEL_PACK_BUFFER, null);
             const currFramebuffer = _currentRenderTarget !== null ? properties.get(_currentRenderTarget).__webglFramebuffer : null;
-            state2.bindFramebuffer(_gl.FRAMEBUFFER, currFramebuffer);
+            state.bindFramebuffer(_gl.FRAMEBUFFER, currFramebuffer);
             const sync = _gl.fenceSync(_gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
             _gl.flush();
             await probeAsync(_gl, sync, 4);
@@ -31108,7 +31108,7 @@ void main() {
         const y = position !== null ? position.y : 0;
         textures.setTexture2D(texture, 0);
         _gl.copyTexSubImage2D(_gl.TEXTURE_2D, level, 0, 0, x, y, width, height);
-        state2.unbindTexture();
+        state.unbindTexture();
       };
       this.copyTextureToTexture = function(srcTexture, dstTexture, srcRegion = null, dstPosition = null, srcLevel = 0, dstLevel = 0) {
         let width, height, depth2, minX, minY, minZ;
@@ -31158,20 +31158,20 @@ void main() {
           textures.setTexture2D(dstTexture, 0);
           glTarget = _gl.TEXTURE_2D;
         }
-        state2.activeTexture(_gl.TEXTURE0);
-        state2.pixelStorei(_gl.UNPACK_FLIP_Y_WEBGL, dstTexture.flipY);
-        state2.pixelStorei(_gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, dstTexture.premultiplyAlpha);
-        state2.pixelStorei(_gl.UNPACK_ALIGNMENT, dstTexture.unpackAlignment);
-        const currentUnpackRowLen = state2.getParameter(_gl.UNPACK_ROW_LENGTH);
-        const currentUnpackImageHeight = state2.getParameter(_gl.UNPACK_IMAGE_HEIGHT);
-        const currentUnpackSkipPixels = state2.getParameter(_gl.UNPACK_SKIP_PIXELS);
-        const currentUnpackSkipRows = state2.getParameter(_gl.UNPACK_SKIP_ROWS);
-        const currentUnpackSkipImages = state2.getParameter(_gl.UNPACK_SKIP_IMAGES);
-        state2.pixelStorei(_gl.UNPACK_ROW_LENGTH, image.width);
-        state2.pixelStorei(_gl.UNPACK_IMAGE_HEIGHT, image.height);
-        state2.pixelStorei(_gl.UNPACK_SKIP_PIXELS, minX);
-        state2.pixelStorei(_gl.UNPACK_SKIP_ROWS, minY);
-        state2.pixelStorei(_gl.UNPACK_SKIP_IMAGES, minZ);
+        state.activeTexture(_gl.TEXTURE0);
+        state.pixelStorei(_gl.UNPACK_FLIP_Y_WEBGL, dstTexture.flipY);
+        state.pixelStorei(_gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, dstTexture.premultiplyAlpha);
+        state.pixelStorei(_gl.UNPACK_ALIGNMENT, dstTexture.unpackAlignment);
+        const currentUnpackRowLen = state.getParameter(_gl.UNPACK_ROW_LENGTH);
+        const currentUnpackImageHeight = state.getParameter(_gl.UNPACK_IMAGE_HEIGHT);
+        const currentUnpackSkipPixels = state.getParameter(_gl.UNPACK_SKIP_PIXELS);
+        const currentUnpackSkipRows = state.getParameter(_gl.UNPACK_SKIP_ROWS);
+        const currentUnpackSkipImages = state.getParameter(_gl.UNPACK_SKIP_IMAGES);
+        state.pixelStorei(_gl.UNPACK_ROW_LENGTH, image.width);
+        state.pixelStorei(_gl.UNPACK_IMAGE_HEIGHT, image.height);
+        state.pixelStorei(_gl.UNPACK_SKIP_PIXELS, minX);
+        state.pixelStorei(_gl.UNPACK_SKIP_ROWS, minY);
+        state.pixelStorei(_gl.UNPACK_SKIP_IMAGES, minZ);
         const isSrc3D = srcTexture.isDataArrayTexture || srcTexture.isData3DTexture;
         const isDst3D = dstTexture.isDataArrayTexture || dstTexture.isData3DTexture;
         if (srcTexture.isDepthTexture) {
@@ -31179,8 +31179,8 @@ void main() {
           const dstTextureProperties = properties.get(dstTexture);
           const srcRenderTargetProperties = properties.get(srcTextureProperties.__renderTarget);
           const dstRenderTargetProperties = properties.get(dstTextureProperties.__renderTarget);
-          state2.bindFramebuffer(_gl.READ_FRAMEBUFFER, srcRenderTargetProperties.__webglFramebuffer);
-          state2.bindFramebuffer(_gl.DRAW_FRAMEBUFFER, dstRenderTargetProperties.__webglFramebuffer);
+          state.bindFramebuffer(_gl.READ_FRAMEBUFFER, srcRenderTargetProperties.__webglFramebuffer);
+          state.bindFramebuffer(_gl.DRAW_FRAMEBUFFER, dstRenderTargetProperties.__webglFramebuffer);
           for (let i = 0; i < depth2; i++) {
             if (isSrc3D) {
               _gl.framebufferTextureLayer(_gl.READ_FRAMEBUFFER, _gl.COLOR_ATTACHMENT0, properties.get(srcTexture).__webglTexture, srcLevel, minZ + i);
@@ -31188,13 +31188,13 @@ void main() {
             }
             _gl.blitFramebuffer(minX, minY, minX + width, minY + height, dstX, dstY, dstX + width, dstY + height, _gl.DEPTH_BUFFER_BIT, _gl.NEAREST);
           }
-          state2.bindFramebuffer(_gl.READ_FRAMEBUFFER, null);
-          state2.bindFramebuffer(_gl.DRAW_FRAMEBUFFER, null);
+          state.bindFramebuffer(_gl.READ_FRAMEBUFFER, null);
+          state.bindFramebuffer(_gl.DRAW_FRAMEBUFFER, null);
         } else if (srcLevel !== 0 || srcTexture.isRenderTargetTexture || properties.has(srcTexture)) {
           const srcTextureProperties = properties.get(srcTexture);
           const dstTextureProperties = properties.get(dstTexture);
-          state2.bindFramebuffer(_gl.READ_FRAMEBUFFER, _srcFramebuffer);
-          state2.bindFramebuffer(_gl.DRAW_FRAMEBUFFER, _dstFramebuffer);
+          state.bindFramebuffer(_gl.READ_FRAMEBUFFER, _srcFramebuffer);
+          state.bindFramebuffer(_gl.DRAW_FRAMEBUFFER, _dstFramebuffer);
           for (let i = 0; i < depth2; i++) {
             if (isSrc3D) {
               _gl.framebufferTextureLayer(_gl.READ_FRAMEBUFFER, _gl.COLOR_ATTACHMENT0, srcTextureProperties.__webglTexture, srcLevel, minZ + i);
@@ -31214,8 +31214,8 @@ void main() {
               _gl.copyTexSubImage2D(glTarget, dstLevel, dstX, dstY, minX, minY, width, height);
             }
           }
-          state2.bindFramebuffer(_gl.READ_FRAMEBUFFER, null);
-          state2.bindFramebuffer(_gl.DRAW_FRAMEBUFFER, null);
+          state.bindFramebuffer(_gl.READ_FRAMEBUFFER, null);
+          state.bindFramebuffer(_gl.DRAW_FRAMEBUFFER, null);
         } else {
           if (isDst3D) {
             if (srcTexture.isDataTexture || srcTexture.isData3DTexture) {
@@ -31235,15 +31235,15 @@ void main() {
             }
           }
         }
-        state2.pixelStorei(_gl.UNPACK_ROW_LENGTH, currentUnpackRowLen);
-        state2.pixelStorei(_gl.UNPACK_IMAGE_HEIGHT, currentUnpackImageHeight);
-        state2.pixelStorei(_gl.UNPACK_SKIP_PIXELS, currentUnpackSkipPixels);
-        state2.pixelStorei(_gl.UNPACK_SKIP_ROWS, currentUnpackSkipRows);
-        state2.pixelStorei(_gl.UNPACK_SKIP_IMAGES, currentUnpackSkipImages);
+        state.pixelStorei(_gl.UNPACK_ROW_LENGTH, currentUnpackRowLen);
+        state.pixelStorei(_gl.UNPACK_IMAGE_HEIGHT, currentUnpackImageHeight);
+        state.pixelStorei(_gl.UNPACK_SKIP_PIXELS, currentUnpackSkipPixels);
+        state.pixelStorei(_gl.UNPACK_SKIP_ROWS, currentUnpackSkipRows);
+        state.pixelStorei(_gl.UNPACK_SKIP_IMAGES, currentUnpackSkipImages);
         if (dstLevel === 0 && dstTexture.generateMipmaps === true && dstTexture.mipmapsAutoUpdate === true) {
           _gl.generateMipmap(glTarget);
         }
-        state2.unbindTexture();
+        state.unbindTexture();
       };
       this.initRenderTarget = function(target) {
         if (properties.get(target).__webglFramebuffer === void 0) {
@@ -31260,13 +31260,13 @@ void main() {
         } else {
           textures.setTexture2D(texture, 0);
         }
-        state2.unbindTexture();
+        state.unbindTexture();
       };
       this.resetState = function() {
         _currentActiveCubeFace = 0;
         _currentActiveMipmapLevel = 0;
         _currentRenderTarget = null;
-        state2.reset();
+        state.reset();
         bindingStates.reset();
       };
       if (typeof __THREE_DEVTOOLS__ !== "undefined") {
@@ -33821,7 +33821,7 @@ void main() {
   var _cb = new Vector3();
   var _color2 = new Color();
   function ParserState() {
-    const state2 = {
+    const state = {
       objects: [],
       object: {},
       vertices: [],
@@ -34050,8 +34050,8 @@ void main() {
         }
       }
     };
-    state2.startObject("", false);
-    return state2;
+    state.startObject("", false);
+    return state;
   }
   var OBJLoader = class extends Loader {
     /**
@@ -34110,7 +34110,7 @@ void main() {
      * @return {Group} The parsed OBJ.
      */
     parse(text) {
-      const state2 = new ParserState();
+      const state = new ParserState();
       if (text.indexOf("\r\n") !== -1) {
         text = text.replace(/\r\n/g, "\n");
       }
@@ -34128,7 +34128,7 @@ void main() {
           const data = line.split(_face_vertex_data_separator_pattern);
           switch (data[0]) {
             case "v":
-              state2.vertices.push(
+              state.vertices.push(
                 parseFloat(data[1]),
                 parseFloat(data[2]),
                 parseFloat(data[3])
@@ -34140,20 +34140,20 @@ void main() {
                   parseFloat(data[6]),
                   SRGBColorSpace
                 );
-                state2.colors.push(_color2.r, _color2.g, _color2.b);
+                state.colors.push(_color2.r, _color2.g, _color2.b);
               } else {
-                state2.colors.push(void 0, void 0, void 0);
+                state.colors.push(void 0, void 0, void 0);
               }
               break;
             case "vn":
-              state2.normals.push(
+              state.normals.push(
                 parseFloat(data[1]),
                 parseFloat(data[2]),
                 parseFloat(data[3])
               );
               break;
             case "vt":
-              state2.uvs.push(
+              state.uvs.push(
                 parseFloat(data[1]),
                 parseFloat(data[2])
               );
@@ -34174,7 +34174,7 @@ void main() {
           for (let j = 1, jl = faceVertices.length - 1; j < jl; j++) {
             const v2 = faceVertices[j];
             const v3 = faceVertices[j + 1];
-            state2.addFace(
+            state.addFace(
               v1[0],
               v2[0],
               v3[0],
@@ -34199,42 +34199,42 @@ void main() {
               if (parts[1] !== "") lineUVs.push(parts[1]);
             }
           }
-          state2.addLineGeometry(lineVertices, lineUVs);
+          state.addLineGeometry(lineVertices, lineUVs);
         } else if (lineFirstChar === "p") {
           const lineData = line.slice(1).trim();
           const pointData = lineData.split(_face_vertex_data_separator_pattern);
-          state2.addPointGeometry(pointData);
+          state.addPointGeometry(pointData);
         } else if ((result = _object_pattern.exec(line)) !== null) {
           const name = (" " + result[0].slice(1).trim()).slice(1);
-          state2.startObject(name);
+          state.startObject(name);
         } else if (_material_use_pattern.test(line)) {
-          state2.object.startMaterial(line.substring(7).trim(), state2.materialLibraries);
+          state.object.startMaterial(line.substring(7).trim(), state.materialLibraries);
         } else if (_material_library_pattern.test(line)) {
-          state2.materialLibraries.push(line.substring(7).trim());
+          state.materialLibraries.push(line.substring(7).trim());
         } else if (_map_use_pattern.test(line)) {
           console.warn('THREE.OBJLoader: Rendering identifier "usemap" not supported. Textures must be defined in MTL files.');
         } else if (lineFirstChar === "s") {
           result = line.split(" ");
           if (result.length > 1) {
             const value = result[1].trim().toLowerCase();
-            state2.object.smooth = value !== "0" && value !== "off";
+            state.object.smooth = value !== "0" && value !== "off";
           } else {
-            state2.object.smooth = true;
+            state.object.smooth = true;
           }
-          const material = state2.object.currentMaterial();
-          if (material) material.smooth = state2.object.smooth;
+          const material = state.object.currentMaterial();
+          if (material) material.smooth = state.object.smooth;
         } else {
           if (line === "\0") continue;
           console.warn('THREE.OBJLoader: Unexpected line: "' + line + '"');
         }
       }
-      state2.finalize();
+      state.finalize();
       const container = new Group();
-      container.materialLibraries = [].concat(state2.materialLibraries);
-      const hasPrimitives = !(state2.objects.length === 1 && state2.objects[0].geometry.vertices.length === 0);
+      container.materialLibraries = [].concat(state.materialLibraries);
+      const hasPrimitives = !(state.objects.length === 1 && state.objects[0].geometry.vertices.length === 0);
       if (hasPrimitives === true) {
-        for (let i = 0, l = state2.objects.length; i < l; i++) {
-          const object = state2.objects[i];
+        for (let i = 0, l = state.objects.length; i < l; i++) {
+          const object = state.objects[i];
           const geometry = object.geometry;
           const materials = object.materials;
           const isLine = geometry.type === "Line";
@@ -34257,7 +34257,7 @@ void main() {
           for (let mi = 0, miLen = materials.length; mi < miLen; mi++) {
             const sourceMaterial = materials[mi];
             const materialHash = sourceMaterial.name + "_" + sourceMaterial.smooth + "_" + hasVertexColors;
-            let material = state2.materials[materialHash];
+            let material = state.materials[materialHash];
             if (this.materials !== null) {
               material = this.materials.create(sourceMaterial.name);
               if (isLine && material && !(material instanceof LineBasicMaterial)) {
@@ -34284,7 +34284,7 @@ void main() {
               material.name = sourceMaterial.name;
               material.flatShading = sourceMaterial.smooth ? false : true;
               material.vertexColors = hasVertexColors;
-              state2.materials[materialHash] = material;
+              state.materials[materialHash] = material;
             }
             createdMaterials.push(material);
           }
@@ -34314,12 +34314,12 @@ void main() {
           container.add(mesh);
         }
       } else {
-        if (state2.vertices.length > 0) {
+        if (state.vertices.length > 0) {
           const material = new PointsMaterial({ size: 1, sizeAttenuation: false });
           const buffergeometry = new BufferGeometry();
-          buffergeometry.setAttribute("position", new Float32BufferAttribute(state2.vertices, 3));
-          if (state2.colors.length > 0 && state2.colors[0] !== void 0) {
-            buffergeometry.setAttribute("color", new Float32BufferAttribute(state2.colors, 3));
+          buffergeometry.setAttribute("position", new Float32BufferAttribute(state.vertices, 3));
+          if (state.colors.length > 0 && state.colors[0] !== void 0) {
+            buffergeometry.setAttribute("color", new Float32BufferAttribute(state.colors, 3));
             material.vertexColors = true;
           }
           const points = new Points(buffergeometry, material);
@@ -37241,1714 +37241,6 @@ void main() {
     }
   };
 
-  // node_modules/lil-gui/dist/lil-gui.esm.js
-  var Controller = class _Controller {
-    constructor(parent, object, property, className, elementType = "div") {
-      this.parent = parent;
-      this.object = object;
-      this.property = property;
-      this._disabled = false;
-      this._hidden = false;
-      this.initialValue = this.getValue();
-      this.domElement = document.createElement(elementType);
-      this.domElement.classList.add("lil-controller");
-      this.domElement.classList.add(className);
-      this.$name = document.createElement("div");
-      this.$name.classList.add("lil-name");
-      _Controller.nextNameID = _Controller.nextNameID || 0;
-      this.$name.id = `lil-gui-name-${++_Controller.nextNameID}`;
-      this.$widget = document.createElement("div");
-      this.$widget.classList.add("lil-widget");
-      this.$disable = this.$widget;
-      this.domElement.appendChild(this.$name);
-      this.domElement.appendChild(this.$widget);
-      this.domElement.addEventListener("keydown", (e) => e.stopPropagation());
-      this.domElement.addEventListener("keyup", (e) => e.stopPropagation());
-      this.parent.children.push(this);
-      this.parent.controllers.push(this);
-      this.parent.$children.appendChild(this.domElement);
-      this._listenCallback = this._listenCallback.bind(this);
-      this.name(property);
-    }
-    /**
-     * Sets the name of the controller and its label in the GUI.
-     * @param {string} name
-     * @returns {this}
-     */
-    name(name) {
-      this._name = name;
-      this.$name.textContent = name;
-      return this;
-    }
-    /**
-     * Pass a function to be called whenever the value is modified by this controller.
-     * The function receives the new value as its first parameter. The value of `this` will be the
-     * controller.
-     *
-     * For function controllers, the `onChange` callback will be fired on click, after the function
-     * executes.
-     * @param {Function} callback
-     * @returns {this}
-     * @example
-     * const controller = gui.add( object, 'property' );
-     *
-     * controller.onChange( function( v ) {
-     * 	console.log( 'The value is now ' + v );
-     * 	console.assert( this === controller );
-     * } );
-     */
-    onChange(callback) {
-      this._onChange = callback;
-      return this;
-    }
-    /**
-     * Calls the onChange methods of this controller and its parent GUI.
-     * @protected
-     */
-    _callOnChange() {
-      this.parent._callOnChange(this);
-      if (this._onChange !== void 0) {
-        this._onChange.call(this, this.getValue());
-      }
-      this._changed = true;
-    }
-    /**
-     * Pass a function to be called after this controller has been modified and loses focus.
-     * @param {Function} callback
-     * @returns {this}
-     * @example
-     * const controller = gui.add( object, 'property' );
-     *
-     * controller.onFinishChange( function( v ) {
-     * 	console.log( 'Changes complete: ' + v );
-     * 	console.assert( this === controller );
-     * } );
-     */
-    onFinishChange(callback) {
-      this._onFinishChange = callback;
-      return this;
-    }
-    /**
-     * Should be called by Controller when its widgets lose focus.
-     * @protected
-     */
-    _callOnFinishChange() {
-      if (this._changed) {
-        this.parent._callOnFinishChange(this);
-        if (this._onFinishChange !== void 0) {
-          this._onFinishChange.call(this, this.getValue());
-        }
-      }
-      this._changed = false;
-    }
-    /**
-     * Sets the controller back to its initial value.
-     * @returns {this}
-     */
-    reset() {
-      this.setValue(this.initialValue);
-      this._callOnFinishChange();
-      return this;
-    }
-    /**
-     * Enables this controller.
-     * @param {boolean} enabled
-     * @returns {this}
-     * @example
-     * controller.enable();
-     * controller.enable( false ); // disable
-     * controller.enable( controller._disabled ); // toggle
-     */
-    enable(enabled = true) {
-      return this.disable(!enabled);
-    }
-    /**
-     * Disables this controller.
-     * @param {boolean} disabled
-     * @returns {this}
-     * @example
-     * controller.disable();
-     * controller.disable( false ); // enable
-     * controller.disable( !controller._disabled ); // toggle
-     */
-    disable(disabled = true) {
-      if (disabled === this._disabled) return this;
-      this._disabled = disabled;
-      this.domElement.classList.toggle("lil-disabled", disabled);
-      this.$disable.toggleAttribute("disabled", disabled);
-      return this;
-    }
-    /**
-     * Shows the Controller after it's been hidden.
-     * @param {boolean} show
-     * @returns {this}
-     * @example
-     * controller.show();
-     * controller.show( false ); // hide
-     * controller.show( controller._hidden ); // toggle
-     */
-    show(show = true) {
-      this._hidden = !show;
-      this.domElement.style.display = this._hidden ? "none" : "";
-      return this;
-    }
-    /**
-     * Hides the Controller.
-     * @returns {this}
-     */
-    hide() {
-      return this.show(false);
-    }
-    /**
-     * Changes this controller into a dropdown of options.
-     *
-     * Calling this method on an option controller will simply update the options. However, if this
-     * controller was not already an option controller, old references to this controller are
-     * destroyed, and a new controller is added to the end of the GUI.
-     * @example
-     * // safe usage
-     *
-     * gui.add( obj, 'prop1' ).options( [ 'a', 'b', 'c' ] );
-     * gui.add( obj, 'prop2' ).options( { Big: 10, Small: 1 } );
-     * gui.add( obj, 'prop3' );
-     *
-     * // danger
-     *
-     * const ctrl1 = gui.add( obj, 'prop1' );
-     * gui.add( obj, 'prop2' );
-     *
-     * // calling options out of order adds a new controller to the end...
-     * const ctrl2 = ctrl1.options( [ 'a', 'b', 'c' ] );
-     *
-     * // ...and ctrl1 now references a controller that doesn't exist
-     * assert( ctrl2 !== ctrl1 )
-     * @param {object|Array} options
-     * @returns {Controller}
-     */
-    options(options) {
-      const controller = this.parent.add(this.object, this.property, options);
-      controller.name(this._name);
-      this.destroy();
-      return controller;
-    }
-    /**
-     * Sets the minimum value. Only works on number controllers.
-     * @param {number} min
-     * @returns {this}
-     */
-    min(min) {
-      return this;
-    }
-    /**
-     * Sets the maximum value. Only works on number controllers.
-     * @param {number} max
-     * @returns {this}
-     */
-    max(max) {
-      return this;
-    }
-    /**
-     * Values set by this controller will be rounded to multiples of `step`. Only works on number
-     * controllers.
-     * @param {number} step
-     * @returns {this}
-     */
-    step(step) {
-      return this;
-    }
-    /**
-     * Rounds the displayed value to a fixed number of decimals, without affecting the actual value
-     * like `step()`. Only works on number controllers.
-     * @example
-     * gui.add( object, 'property' ).listen().decimals( 4 );
-     * @param {number} decimals
-     * @returns {this}
-     */
-    decimals(decimals) {
-      return this;
-    }
-    /**
-     * Calls `updateDisplay()` every animation frame. Pass `false` to stop listening.
-     * @param {boolean} listen
-     * @returns {this}
-     */
-    listen(listen = true) {
-      this._listening = listen;
-      if (this._listenCallbackID !== void 0) {
-        cancelAnimationFrame(this._listenCallbackID);
-        this._listenCallbackID = void 0;
-      }
-      if (this._listening) {
-        this._listenCallback();
-      }
-      return this;
-    }
-    _listenCallback() {
-      this._listenCallbackID = requestAnimationFrame(this._listenCallback);
-      const curValue = this.save();
-      if (curValue !== this._listenPrevValue) {
-        this.updateDisplay();
-      }
-      this._listenPrevValue = curValue;
-    }
-    /**
-     * Returns `object[ property ]`.
-     * @returns {any}
-     */
-    getValue() {
-      return this.object[this.property];
-    }
-    /**
-     * Sets the value of `object[ property ]`, invokes any `onChange` handlers and updates the display.
-     * @param {any} value
-     * @returns {this}
-     */
-    setValue(value) {
-      if (this.getValue() !== value) {
-        this.object[this.property] = value;
-        this._callOnChange();
-        this.updateDisplay();
-      }
-      return this;
-    }
-    /**
-     * Updates the display to keep it in sync with the current value. Useful for updating your
-     * controllers when their values have been modified outside of the GUI.
-     * @returns {this}
-     */
-    updateDisplay() {
-      return this;
-    }
-    load(value) {
-      this.setValue(value);
-      this._callOnFinishChange();
-      return this;
-    }
-    save() {
-      return this.getValue();
-    }
-    /**
-     * Destroys this controller and removes it from the parent GUI.
-     */
-    destroy() {
-      this.listen(false);
-      this.parent.children.splice(this.parent.children.indexOf(this), 1);
-      this.parent.controllers.splice(this.parent.controllers.indexOf(this), 1);
-      this.parent.$children.removeChild(this.domElement);
-    }
-  };
-  var BooleanController = class extends Controller {
-    constructor(parent, object, property) {
-      super(parent, object, property, "lil-boolean", "label");
-      this.$input = document.createElement("input");
-      this.$input.setAttribute("type", "checkbox");
-      this.$input.setAttribute("aria-labelledby", this.$name.id);
-      this.$widget.appendChild(this.$input);
-      this.$input.addEventListener("change", () => {
-        this.setValue(this.$input.checked);
-        this._callOnFinishChange();
-      });
-      this.$disable = this.$input;
-      this.updateDisplay();
-    }
-    updateDisplay() {
-      this.$input.checked = this.getValue();
-      return this;
-    }
-  };
-  function normalizeColorString(string) {
-    let match, result;
-    if (match = string.match(/(#|0x)?([a-f0-9]{6})/i)) {
-      result = match[2];
-    } else if (match = string.match(/rgb\(\s*(\d*)\s*,\s*(\d*)\s*,\s*(\d*)\s*\)/)) {
-      result = parseInt(match[1]).toString(16).padStart(2, 0) + parseInt(match[2]).toString(16).padStart(2, 0) + parseInt(match[3]).toString(16).padStart(2, 0);
-    } else if (match = string.match(/^#?([a-f0-9])([a-f0-9])([a-f0-9])$/i)) {
-      result = match[1] + match[1] + match[2] + match[2] + match[3] + match[3];
-    }
-    if (result) {
-      return "#" + result;
-    }
-    return false;
-  }
-  var STRING = {
-    isPrimitive: true,
-    match: (v) => typeof v === "string",
-    fromHexString: normalizeColorString,
-    toHexString: normalizeColorString
-  };
-  var INT = {
-    isPrimitive: true,
-    match: (v) => typeof v === "number",
-    fromHexString: (string) => parseInt(string.substring(1), 16),
-    toHexString: (value) => "#" + value.toString(16).padStart(6, 0)
-  };
-  var ARRAY = {
-    isPrimitive: false,
-    match: (v) => Array.isArray(v) || ArrayBuffer.isView(v),
-    fromHexString(string, target, rgbScale = 1) {
-      const int = INT.fromHexString(string);
-      target[0] = (int >> 16 & 255) / 255 * rgbScale;
-      target[1] = (int >> 8 & 255) / 255 * rgbScale;
-      target[2] = (int & 255) / 255 * rgbScale;
-    },
-    toHexString([r, g, b], rgbScale = 1) {
-      rgbScale = 255 / rgbScale;
-      const int = r * rgbScale << 16 ^ g * rgbScale << 8 ^ b * rgbScale << 0;
-      return INT.toHexString(int);
-    }
-  };
-  var OBJECT = {
-    isPrimitive: false,
-    match: (v) => Object(v) === v,
-    fromHexString(string, target, rgbScale = 1) {
-      const int = INT.fromHexString(string);
-      target.r = (int >> 16 & 255) / 255 * rgbScale;
-      target.g = (int >> 8 & 255) / 255 * rgbScale;
-      target.b = (int & 255) / 255 * rgbScale;
-    },
-    toHexString({ r, g, b }, rgbScale = 1) {
-      rgbScale = 255 / rgbScale;
-      const int = r * rgbScale << 16 ^ g * rgbScale << 8 ^ b * rgbScale << 0;
-      return INT.toHexString(int);
-    }
-  };
-  var FORMATS = [STRING, INT, ARRAY, OBJECT];
-  function getColorFormat(value) {
-    return FORMATS.find((format) => format.match(value));
-  }
-  var ColorController = class extends Controller {
-    constructor(parent, object, property, rgbScale) {
-      super(parent, object, property, "lil-color");
-      this.$input = document.createElement("input");
-      this.$input.setAttribute("type", "color");
-      this.$input.setAttribute("tabindex", -1);
-      this.$input.setAttribute("aria-labelledby", this.$name.id);
-      this.$text = document.createElement("input");
-      this.$text.setAttribute("type", "text");
-      this.$text.setAttribute("spellcheck", "false");
-      this.$text.setAttribute("aria-labelledby", this.$name.id);
-      this.$display = document.createElement("div");
-      this.$display.classList.add("lil-display");
-      this.$display.appendChild(this.$input);
-      this.$widget.appendChild(this.$display);
-      this.$widget.appendChild(this.$text);
-      this._format = getColorFormat(this.initialValue);
-      this._rgbScale = rgbScale;
-      this._initialValueHexString = this.save();
-      this._textFocused = false;
-      this.$input.addEventListener("input", () => {
-        this._setValueFromHexString(this.$input.value);
-      });
-      this.$input.addEventListener("blur", () => {
-        this._callOnFinishChange();
-      });
-      this.$text.addEventListener("input", () => {
-        const tryParse = normalizeColorString(this.$text.value);
-        if (tryParse) {
-          this._setValueFromHexString(tryParse);
-        }
-      });
-      this.$text.addEventListener("focus", () => {
-        this._textFocused = true;
-        this.$text.select();
-      });
-      this.$text.addEventListener("blur", () => {
-        this._textFocused = false;
-        this.updateDisplay();
-        this._callOnFinishChange();
-      });
-      this.$disable = this.$text;
-      this.updateDisplay();
-    }
-    reset() {
-      this._setValueFromHexString(this._initialValueHexString);
-      return this;
-    }
-    _setValueFromHexString(value) {
-      if (this._format.isPrimitive) {
-        const newValue = this._format.fromHexString(value);
-        this.setValue(newValue);
-      } else {
-        this._format.fromHexString(value, this.getValue(), this._rgbScale);
-        this._callOnChange();
-        this.updateDisplay();
-      }
-    }
-    save() {
-      return this._format.toHexString(this.getValue(), this._rgbScale);
-    }
-    load(value) {
-      this._setValueFromHexString(value);
-      this._callOnFinishChange();
-      return this;
-    }
-    updateDisplay() {
-      this.$input.value = this._format.toHexString(this.getValue(), this._rgbScale);
-      if (!this._textFocused) {
-        this.$text.value = this.$input.value.substring(1);
-      }
-      this.$display.style.backgroundColor = this.$input.value;
-      return this;
-    }
-  };
-  var FunctionController = class extends Controller {
-    constructor(parent, object, property) {
-      super(parent, object, property, "lil-function");
-      this.$button = document.createElement("button");
-      this.$button.appendChild(this.$name);
-      this.$widget.appendChild(this.$button);
-      this.$button.addEventListener("click", (e) => {
-        e.preventDefault();
-        this.getValue().call(this.object);
-        this._callOnChange();
-      });
-      this.$button.addEventListener("touchstart", () => {
-      }, { passive: true });
-      this.$disable = this.$button;
-    }
-  };
-  var NumberController = class extends Controller {
-    constructor(parent, object, property, min, max, step) {
-      super(parent, object, property, "lil-number");
-      this._initInput();
-      this.min(min);
-      this.max(max);
-      const stepExplicit = step !== void 0;
-      this.step(stepExplicit ? step : this._getImplicitStep(), stepExplicit);
-      this.updateDisplay();
-    }
-    decimals(decimals) {
-      this._decimals = decimals;
-      this.updateDisplay();
-      return this;
-    }
-    min(min) {
-      this._min = min;
-      this._onUpdateMinMax();
-      return this;
-    }
-    max(max) {
-      this._max = max;
-      this._onUpdateMinMax();
-      return this;
-    }
-    step(step, explicit = true) {
-      this._step = step;
-      this._stepExplicit = explicit;
-      return this;
-    }
-    updateDisplay() {
-      const value = this.getValue();
-      if (this._hasSlider) {
-        let percent = (value - this._min) / (this._max - this._min);
-        percent = Math.max(0, Math.min(percent, 1));
-        this.$fill.style.width = percent * 100 + "%";
-      }
-      if (!this._inputFocused) {
-        this.$input.value = this._decimals === void 0 ? value : value.toFixed(this._decimals);
-      }
-      return this;
-    }
-    _initInput() {
-      this.$input = document.createElement("input");
-      this.$input.setAttribute("type", "text");
-      this.$input.setAttribute("aria-labelledby", this.$name.id);
-      const isTouch = window.matchMedia("(pointer: coarse)").matches;
-      if (isTouch) {
-        this.$input.setAttribute("type", "number");
-        this.$input.setAttribute("step", "any");
-      }
-      this.$widget.appendChild(this.$input);
-      this.$disable = this.$input;
-      const onInput = () => {
-        let value = parseFloat(this.$input.value);
-        if (isNaN(value)) return;
-        if (this._stepExplicit) {
-          value = this._snap(value);
-        }
-        this.setValue(this._clamp(value));
-      };
-      const increment = (delta) => {
-        const value = parseFloat(this.$input.value);
-        if (isNaN(value)) return;
-        this._snapClampSetValue(value + delta);
-        this.$input.value = this.getValue();
-      };
-      const onKeyDown2 = (e) => {
-        if (e.key === "Enter") {
-          this.$input.blur();
-        }
-        if (e.code === "ArrowUp") {
-          e.preventDefault();
-          increment(this._step * this._arrowKeyMultiplier(e));
-        }
-        if (e.code === "ArrowDown") {
-          e.preventDefault();
-          increment(this._step * this._arrowKeyMultiplier(e) * -1);
-        }
-      };
-      const onWheel = (e) => {
-        if (this._inputFocused) {
-          e.preventDefault();
-          increment(this._step * this._normalizeMouseWheel(e));
-        }
-      };
-      let testingForVerticalDrag = false, initClientX, initClientY, prevClientY, initValue, dragDelta;
-      const DRAG_THRESH = 5;
-      const onMouseDown2 = (e) => {
-        initClientX = e.clientX;
-        initClientY = prevClientY = e.clientY;
-        testingForVerticalDrag = true;
-        initValue = this.getValue();
-        dragDelta = 0;
-        window.addEventListener("mousemove", onMouseMove2);
-        window.addEventListener("mouseup", onMouseUp);
-      };
-      const onMouseMove2 = (e) => {
-        if (testingForVerticalDrag) {
-          const dx = e.clientX - initClientX;
-          const dy = e.clientY - initClientY;
-          if (Math.abs(dy) > DRAG_THRESH) {
-            e.preventDefault();
-            this.$input.blur();
-            testingForVerticalDrag = false;
-            this._setDraggingStyle(true, "vertical");
-          } else if (Math.abs(dx) > DRAG_THRESH) {
-            onMouseUp();
-          }
-        }
-        if (!testingForVerticalDrag) {
-          const dy = e.clientY - prevClientY;
-          dragDelta -= dy * this._step * this._arrowKeyMultiplier(e);
-          if (initValue + dragDelta > this._max) {
-            dragDelta = this._max - initValue;
-          } else if (initValue + dragDelta < this._min) {
-            dragDelta = this._min - initValue;
-          }
-          this._snapClampSetValue(initValue + dragDelta);
-        }
-        prevClientY = e.clientY;
-      };
-      const onMouseUp = () => {
-        this._setDraggingStyle(false, "vertical");
-        this._callOnFinishChange();
-        window.removeEventListener("mousemove", onMouseMove2);
-        window.removeEventListener("mouseup", onMouseUp);
-      };
-      const onFocus = () => {
-        this._inputFocused = true;
-      };
-      const onBlur = () => {
-        this._inputFocused = false;
-        this.updateDisplay();
-        this._callOnFinishChange();
-      };
-      this.$input.addEventListener("input", onInput);
-      this.$input.addEventListener("keydown", onKeyDown2);
-      this.$input.addEventListener("wheel", onWheel, { passive: false });
-      this.$input.addEventListener("mousedown", onMouseDown2);
-      this.$input.addEventListener("focus", onFocus);
-      this.$input.addEventListener("blur", onBlur);
-    }
-    _initSlider() {
-      this._hasSlider = true;
-      this.$slider = document.createElement("div");
-      this.$slider.classList.add("lil-slider");
-      this.$fill = document.createElement("div");
-      this.$fill.classList.add("lil-fill");
-      this.$slider.appendChild(this.$fill);
-      this.$widget.insertBefore(this.$slider, this.$input);
-      this.domElement.classList.add("lil-has-slider");
-      const map = (v, a, b, c, d) => {
-        return (v - a) / (b - a) * (d - c) + c;
-      };
-      const setValueFromX = (clientX) => {
-        const rect = this.$slider.getBoundingClientRect();
-        let value = map(clientX, rect.left, rect.right, this._min, this._max);
-        this._snapClampSetValue(value);
-      };
-      const mouseDown = (e) => {
-        this._setDraggingStyle(true);
-        setValueFromX(e.clientX);
-        window.addEventListener("mousemove", mouseMove);
-        window.addEventListener("mouseup", mouseUp);
-      };
-      const mouseMove = (e) => {
-        setValueFromX(e.clientX);
-      };
-      const mouseUp = () => {
-        this._callOnFinishChange();
-        this._setDraggingStyle(false);
-        window.removeEventListener("mousemove", mouseMove);
-        window.removeEventListener("mouseup", mouseUp);
-      };
-      let testingForScroll = false, prevClientX, prevClientY;
-      const beginTouchDrag = (e) => {
-        e.preventDefault();
-        this._setDraggingStyle(true);
-        setValueFromX(e.touches[0].clientX);
-        testingForScroll = false;
-      };
-      const onTouchStart2 = (e) => {
-        if (e.touches.length > 1) return;
-        if (this._hasScrollBar) {
-          prevClientX = e.touches[0].clientX;
-          prevClientY = e.touches[0].clientY;
-          testingForScroll = true;
-        } else {
-          beginTouchDrag(e);
-        }
-        window.addEventListener("touchmove", onTouchMove2, { passive: false });
-        window.addEventListener("touchend", onTouchEnd);
-      };
-      const onTouchMove2 = (e) => {
-        if (testingForScroll) {
-          const dx = e.touches[0].clientX - prevClientX;
-          const dy = e.touches[0].clientY - prevClientY;
-          if (Math.abs(dx) > Math.abs(dy)) {
-            beginTouchDrag(e);
-          } else {
-            window.removeEventListener("touchmove", onTouchMove2);
-            window.removeEventListener("touchend", onTouchEnd);
-          }
-        } else {
-          e.preventDefault();
-          setValueFromX(e.touches[0].clientX);
-        }
-      };
-      const onTouchEnd = () => {
-        this._callOnFinishChange();
-        this._setDraggingStyle(false);
-        window.removeEventListener("touchmove", onTouchMove2);
-        window.removeEventListener("touchend", onTouchEnd);
-      };
-      const callOnFinishChange = this._callOnFinishChange.bind(this);
-      const WHEEL_DEBOUNCE_TIME = 400;
-      let wheelFinishChangeTimeout;
-      const onWheel = (e) => {
-        const isVertical = Math.abs(e.deltaX) < Math.abs(e.deltaY);
-        if (isVertical && this._hasScrollBar) return;
-        e.preventDefault();
-        const delta = this._normalizeMouseWheel(e) * this._step;
-        this._snapClampSetValue(this.getValue() + delta);
-        this.$input.value = this.getValue();
-        clearTimeout(wheelFinishChangeTimeout);
-        wheelFinishChangeTimeout = setTimeout(callOnFinishChange, WHEEL_DEBOUNCE_TIME);
-      };
-      this.$slider.addEventListener("mousedown", mouseDown);
-      this.$slider.addEventListener("touchstart", onTouchStart2, { passive: false });
-      this.$slider.addEventListener("wheel", onWheel, { passive: false });
-    }
-    _setDraggingStyle(active, axis = "horizontal") {
-      if (this.$slider) {
-        this.$slider.classList.toggle("lil-active", active);
-      }
-      document.body.classList.toggle("lil-dragging", active);
-      document.body.classList.toggle(`lil-${axis}`, active);
-    }
-    _getImplicitStep() {
-      if (this._hasMin && this._hasMax) {
-        return (this._max - this._min) / 1e3;
-      }
-      return 0.1;
-    }
-    _onUpdateMinMax() {
-      if (!this._hasSlider && this._hasMin && this._hasMax) {
-        if (!this._stepExplicit) {
-          this.step(this._getImplicitStep(), false);
-        }
-        this._initSlider();
-        this.updateDisplay();
-      }
-    }
-    _normalizeMouseWheel(e) {
-      let { deltaX, deltaY } = e;
-      if (Math.floor(e.deltaY) !== e.deltaY && e.wheelDelta) {
-        deltaX = 0;
-        deltaY = -e.wheelDelta / 120;
-        deltaY *= this._stepExplicit ? 1 : 10;
-      }
-      const wheel = deltaX + -deltaY;
-      return wheel;
-    }
-    _arrowKeyMultiplier(e) {
-      let mult = this._stepExplicit ? 1 : 10;
-      if (e.shiftKey) {
-        mult *= 10;
-      } else if (e.altKey) {
-        mult /= 10;
-      }
-      return mult;
-    }
-    _snap(value) {
-      let offset = 0;
-      if (this._hasMin) {
-        offset = this._min;
-      } else if (this._hasMax) {
-        offset = this._max;
-      }
-      value -= offset;
-      value = Math.round(value / this._step) * this._step;
-      value += offset;
-      value = parseFloat(value.toPrecision(15));
-      return value;
-    }
-    _clamp(value) {
-      if (value < this._min) value = this._min;
-      if (value > this._max) value = this._max;
-      return value;
-    }
-    _snapClampSetValue(value) {
-      this.setValue(this._clamp(this._snap(value)));
-    }
-    get _hasScrollBar() {
-      const root = this.parent.root.$children;
-      return root.scrollHeight > root.clientHeight;
-    }
-    get _hasMin() {
-      return this._min !== void 0;
-    }
-    get _hasMax() {
-      return this._max !== void 0;
-    }
-  };
-  var OptionController = class extends Controller {
-    constructor(parent, object, property, options) {
-      super(parent, object, property, "lil-option");
-      this.$select = document.createElement("select");
-      this.$select.setAttribute("aria-labelledby", this.$name.id);
-      this.$display = document.createElement("div");
-      this.$display.classList.add("lil-display");
-      this.$select.addEventListener("change", () => {
-        this.setValue(this._values[this.$select.selectedIndex]);
-        this._callOnFinishChange();
-      });
-      this.$select.addEventListener("focus", () => {
-        this.$display.classList.add("lil-focus");
-      });
-      this.$select.addEventListener("blur", () => {
-        this.$display.classList.remove("lil-focus");
-      });
-      this.$widget.appendChild(this.$select);
-      this.$widget.appendChild(this.$display);
-      this.$disable = this.$select;
-      this.options(options);
-    }
-    options(options) {
-      this._values = Array.isArray(options) ? options : Object.values(options);
-      this._names = Array.isArray(options) ? options : Object.keys(options);
-      this.$select.replaceChildren();
-      this._names.forEach((name) => {
-        const $option = document.createElement("option");
-        $option.textContent = name;
-        this.$select.appendChild($option);
-      });
-      this.updateDisplay();
-      return this;
-    }
-    updateDisplay() {
-      const value = this.getValue();
-      const index = this._values.indexOf(value);
-      this.$select.selectedIndex = index;
-      this.$display.textContent = index === -1 ? value : this._names[index];
-      return this;
-    }
-  };
-  var StringController = class extends Controller {
-    constructor(parent, object, property) {
-      super(parent, object, property, "lil-string");
-      this.$input = document.createElement("input");
-      this.$input.setAttribute("type", "text");
-      this.$input.setAttribute("spellcheck", "false");
-      this.$input.setAttribute("aria-labelledby", this.$name.id);
-      this.$input.addEventListener("input", () => {
-        this.setValue(this.$input.value);
-      });
-      this.$input.addEventListener("keydown", (e) => {
-        if (e.code === "Enter") {
-          this.$input.blur();
-        }
-      });
-      this.$input.addEventListener("blur", () => {
-        this._callOnFinishChange();
-      });
-      this.$widget.appendChild(this.$input);
-      this.$disable = this.$input;
-      this.updateDisplay();
-    }
-    updateDisplay() {
-      this.$input.value = this.getValue();
-      return this;
-    }
-  };
-  var stylesheet = `.lil-gui {
-  font-family: var(--font-family);
-  font-size: var(--font-size);
-  line-height: 1;
-  font-weight: normal;
-  font-style: normal;
-  text-align: left;
-  color: var(--text-color);
-  user-select: none;
-  -webkit-user-select: none;
-  touch-action: manipulation;
-  --background-color: #1f1f1f;
-  --text-color: #ebebeb;
-  --title-background-color: #111111;
-  --title-text-color: #ebebeb;
-  --widget-color: #424242;
-  --hover-color: #4f4f4f;
-  --focus-color: #595959;
-  --number-color: #2cc9ff;
-  --string-color: #a2db3c;
-  --font-size: 11px;
-  --input-font-size: 11px;
-  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-  --font-family-mono: Menlo, Monaco, Consolas, "Droid Sans Mono", monospace;
-  --padding: 4px;
-  --spacing: 4px;
-  --widget-height: 20px;
-  --title-height: calc(var(--widget-height) + var(--spacing) * 1.25);
-  --name-width: 45%;
-  --slider-knob-width: 2px;
-  --slider-input-width: 27%;
-  --color-input-width: 27%;
-  --slider-input-min-width: 45px;
-  --color-input-min-width: 45px;
-  --folder-indent: 7px;
-  --widget-padding: 0 0 0 3px;
-  --widget-border-radius: 2px;
-  --checkbox-size: calc(0.75 * var(--widget-height));
-  --scrollbar-width: 5px;
-}
-.lil-gui, .lil-gui * {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-.lil-gui.lil-root {
-  width: var(--width, 245px);
-  display: flex;
-  flex-direction: column;
-  background: var(--background-color);
-}
-.lil-gui.lil-root > .lil-title {
-  background: var(--title-background-color);
-  color: var(--title-text-color);
-}
-.lil-gui.lil-root > .lil-children {
-  overflow-x: hidden;
-  overflow-y: auto;
-}
-.lil-gui.lil-root > .lil-children::-webkit-scrollbar {
-  width: var(--scrollbar-width);
-  height: var(--scrollbar-width);
-  background: var(--background-color);
-}
-.lil-gui.lil-root > .lil-children::-webkit-scrollbar-thumb {
-  border-radius: var(--scrollbar-width);
-  background: var(--focus-color);
-}
-@media (pointer: coarse) {
-  .lil-gui.lil-allow-touch-styles, .lil-gui.lil-allow-touch-styles .lil-gui {
-    --widget-height: 28px;
-    --padding: 6px;
-    --spacing: 6px;
-    --font-size: 13px;
-    --input-font-size: 16px;
-    --folder-indent: 10px;
-    --scrollbar-width: 7px;
-    --slider-input-min-width: 50px;
-    --color-input-min-width: 65px;
-  }
-}
-.lil-gui.lil-force-touch-styles, .lil-gui.lil-force-touch-styles .lil-gui {
-  --widget-height: 28px;
-  --padding: 6px;
-  --spacing: 6px;
-  --font-size: 13px;
-  --input-font-size: 16px;
-  --folder-indent: 10px;
-  --scrollbar-width: 7px;
-  --slider-input-min-width: 50px;
-  --color-input-min-width: 65px;
-}
-.lil-gui.lil-auto-place, .lil-gui.autoPlace {
-  max-height: 100%;
-  position: fixed;
-  top: 0;
-  right: 15px;
-  z-index: 1001;
-}
-
-.lil-controller {
-  display: flex;
-  align-items: center;
-  padding: 0 var(--padding);
-  margin: var(--spacing) 0;
-}
-.lil-controller.lil-disabled {
-  opacity: 0.5;
-}
-.lil-controller.lil-disabled, .lil-controller.lil-disabled * {
-  pointer-events: none !important;
-}
-.lil-controller > .lil-name {
-  min-width: var(--name-width);
-  flex-shrink: 0;
-  white-space: pre;
-  padding-right: var(--spacing);
-  line-height: var(--widget-height);
-}
-.lil-controller .lil-widget {
-  position: relative;
-  display: flex;
-  align-items: center;
-  width: 100%;
-  min-height: var(--widget-height);
-}
-.lil-controller.lil-string input {
-  color: var(--string-color);
-}
-.lil-controller.lil-boolean {
-  cursor: pointer;
-}
-.lil-controller.lil-color .lil-display {
-  width: 100%;
-  height: var(--widget-height);
-  border-radius: var(--widget-border-radius);
-  position: relative;
-}
-@media (hover: hover) {
-  .lil-controller.lil-color .lil-display:hover:before {
-    content: " ";
-    display: block;
-    position: absolute;
-    border-radius: var(--widget-border-radius);
-    border: 1px solid #fff9;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-  }
-}
-.lil-controller.lil-color input[type=color] {
-  opacity: 0;
-  width: 100%;
-  height: 100%;
-  cursor: pointer;
-}
-.lil-controller.lil-color input[type=text] {
-  margin-left: var(--spacing);
-  font-family: var(--font-family-mono);
-  min-width: var(--color-input-min-width);
-  width: var(--color-input-width);
-  flex-shrink: 0;
-}
-.lil-controller.lil-option select {
-  opacity: 0;
-  position: absolute;
-  width: 100%;
-  max-width: 100%;
-}
-.lil-controller.lil-option .lil-display {
-  position: relative;
-  pointer-events: none;
-  border-radius: var(--widget-border-radius);
-  height: var(--widget-height);
-  line-height: var(--widget-height);
-  max-width: 100%;
-  overflow: hidden;
-  word-break: break-all;
-  padding-left: 0.55em;
-  padding-right: 1.75em;
-  background: var(--widget-color);
-}
-@media (hover: hover) {
-  .lil-controller.lil-option .lil-display.lil-focus {
-    background: var(--focus-color);
-  }
-}
-.lil-controller.lil-option .lil-display.lil-active {
-  background: var(--focus-color);
-}
-.lil-controller.lil-option .lil-display:after {
-  font-family: "lil-gui";
-  content: "\u2195";
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  padding-right: 0.375em;
-}
-.lil-controller.lil-option .lil-widget,
-.lil-controller.lil-option select {
-  cursor: pointer;
-}
-@media (hover: hover) {
-  .lil-controller.lil-option .lil-widget:hover .lil-display {
-    background: var(--hover-color);
-  }
-}
-.lil-controller.lil-number input {
-  color: var(--number-color);
-}
-.lil-controller.lil-number.lil-has-slider input {
-  margin-left: var(--spacing);
-  width: var(--slider-input-width);
-  min-width: var(--slider-input-min-width);
-  flex-shrink: 0;
-}
-.lil-controller.lil-number .lil-slider {
-  width: 100%;
-  height: var(--widget-height);
-  background: var(--widget-color);
-  border-radius: var(--widget-border-radius);
-  padding-right: var(--slider-knob-width);
-  overflow: hidden;
-  cursor: ew-resize;
-  touch-action: pan-y;
-}
-@media (hover: hover) {
-  .lil-controller.lil-number .lil-slider:hover {
-    background: var(--hover-color);
-  }
-}
-.lil-controller.lil-number .lil-slider.lil-active {
-  background: var(--focus-color);
-}
-.lil-controller.lil-number .lil-slider.lil-active .lil-fill {
-  opacity: 0.95;
-}
-.lil-controller.lil-number .lil-fill {
-  height: 100%;
-  border-right: var(--slider-knob-width) solid var(--number-color);
-  box-sizing: content-box;
-}
-
-.lil-dragging .lil-gui {
-  --hover-color: var(--widget-color);
-}
-.lil-dragging * {
-  cursor: ew-resize !important;
-}
-.lil-dragging.lil-vertical * {
-  cursor: ns-resize !important;
-}
-
-.lil-gui .lil-title {
-  height: var(--title-height);
-  font-weight: 600;
-  padding: 0 var(--padding);
-  width: 100%;
-  text-align: left;
-  background: none;
-  text-decoration-skip: objects;
-}
-.lil-gui .lil-title:before {
-  font-family: "lil-gui";
-  content: "\u25BE";
-  padding-right: 2px;
-  display: inline-block;
-}
-.lil-gui .lil-title:active {
-  background: var(--title-background-color);
-  opacity: 0.75;
-}
-@media (hover: hover) {
-  body:not(.lil-dragging) .lil-gui .lil-title:hover {
-    background: var(--title-background-color);
-    opacity: 0.85;
-  }
-  .lil-gui .lil-title:focus {
-    text-decoration: underline var(--focus-color);
-  }
-}
-.lil-gui.lil-root > .lil-title:focus {
-  text-decoration: none !important;
-}
-.lil-gui.lil-closed > .lil-title:before {
-  content: "\u25B8";
-}
-.lil-gui.lil-closed > .lil-children {
-  transform: translateY(-7px);
-  opacity: 0;
-}
-.lil-gui.lil-closed:not(.lil-transition) > .lil-children {
-  display: none;
-}
-.lil-gui.lil-transition > .lil-children {
-  transition-duration: 300ms;
-  transition-property: height, opacity, transform;
-  transition-timing-function: cubic-bezier(0.2, 0.6, 0.35, 1);
-  overflow: hidden;
-  pointer-events: none;
-}
-.lil-gui .lil-children:empty:before {
-  content: "Empty";
-  padding: 0 var(--padding);
-  margin: var(--spacing) 0;
-  display: block;
-  height: var(--widget-height);
-  font-style: italic;
-  line-height: var(--widget-height);
-  opacity: 0.5;
-}
-.lil-gui.lil-root > .lil-children > .lil-gui > .lil-title {
-  border: 0 solid var(--widget-color);
-  border-width: 1px 0;
-  transition: border-color 300ms;
-}
-.lil-gui.lil-root > .lil-children > .lil-gui.lil-closed > .lil-title {
-  border-bottom-color: transparent;
-}
-.lil-gui + .lil-controller {
-  border-top: 1px solid var(--widget-color);
-  margin-top: 0;
-  padding-top: var(--spacing);
-}
-.lil-gui .lil-gui .lil-gui > .lil-title {
-  border: none;
-}
-.lil-gui .lil-gui .lil-gui > .lil-children {
-  border: none;
-  margin-left: var(--folder-indent);
-  border-left: 2px solid var(--widget-color);
-}
-.lil-gui .lil-gui .lil-controller {
-  border: none;
-}
-
-.lil-gui label, .lil-gui input, .lil-gui button {
-  -webkit-tap-highlight-color: transparent;
-}
-.lil-gui input {
-  border: 0;
-  outline: none;
-  font-family: var(--font-family);
-  font-size: var(--input-font-size);
-  border-radius: var(--widget-border-radius);
-  height: var(--widget-height);
-  background: var(--widget-color);
-  color: var(--text-color);
-  width: 100%;
-}
-@media (hover: hover) {
-  .lil-gui input:hover {
-    background: var(--hover-color);
-  }
-  .lil-gui input:active {
-    background: var(--focus-color);
-  }
-}
-.lil-gui input:disabled {
-  opacity: 1;
-}
-.lil-gui input[type=text],
-.lil-gui input[type=number] {
-  padding: var(--widget-padding);
-  -moz-appearance: textfield;
-}
-.lil-gui input[type=text]:focus,
-.lil-gui input[type=number]:focus {
-  background: var(--focus-color);
-}
-.lil-gui input[type=checkbox] {
-  appearance: none;
-  width: var(--checkbox-size);
-  height: var(--checkbox-size);
-  border-radius: var(--widget-border-radius);
-  text-align: center;
-  cursor: pointer;
-}
-.lil-gui input[type=checkbox]:checked:before {
-  font-family: "lil-gui";
-  content: "\u2713";
-  font-size: var(--checkbox-size);
-  line-height: var(--checkbox-size);
-}
-@media (hover: hover) {
-  .lil-gui input[type=checkbox]:focus {
-    box-shadow: inset 0 0 0 1px var(--focus-color);
-  }
-}
-.lil-gui button {
-  outline: none;
-  cursor: pointer;
-  font-family: var(--font-family);
-  font-size: var(--font-size);
-  color: var(--text-color);
-  width: 100%;
-  border: none;
-}
-.lil-gui .lil-controller button {
-  height: var(--widget-height);
-  text-transform: none;
-  background: var(--widget-color);
-  border-radius: var(--widget-border-radius);
-}
-@media (hover: hover) {
-  .lil-gui .lil-controller button:hover {
-    background: var(--hover-color);
-  }
-  .lil-gui .lil-controller button:focus {
-    box-shadow: inset 0 0 0 1px var(--focus-color);
-  }
-}
-.lil-gui .lil-controller button:active {
-  background: var(--focus-color);
-}
-
-@font-face {
-  font-family: "lil-gui";
-  src: url("data:application/font-woff2;charset=utf-8;base64,d09GMgABAAAAAALkAAsAAAAABtQAAAKVAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHFQGYACDMgqBBIEbATYCJAMUCwwABCAFhAoHgQQbHAbIDiUFEYVARAAAYQTVWNmz9MxhEgodq49wYRUFKE8GWNiUBxI2LBRaVnc51U83Gmhs0Q7JXWMiz5eteLwrKwuxHO8VFxUX9UpZBs6pa5ABRwHA+t3UxUnH20EvVknRerzQgX6xC/GH6ZUvTcAjAv122dF28OTqCXrPuyaDER30YBA1xnkVutDDo4oCi71Ca7rrV9xS8dZHbPHefsuwIyCpmT7j+MnjAH5X3984UZoFFuJ0yiZ4XEJFxjagEBeqs+e1iyK8Xf/nOuwF+vVK0ur765+vf7txotUi0m3N0m/84RGSrBCNrh8Ee5GjODjF4gnWP+dJrH/Lk9k4oT6d+gr6g/wssA2j64JJGP6cmx554vUZnpZfn6ZfX2bMwPPrlANsB86/DiHjhl0OP+c87+gaJo/gY084s3HoYL/ZkWHTRfBXvvoHnnkHvngKun4KBE/ede7tvq3/vQOxDXB1/fdNz6XbPdcr0Vhpojj9dG+owuSKFsslCi1tgEjirjXdwMiov2EioadxmqTHUCIwo8NgQaeIasAi0fTYSPTbSmwbMOFduyh9wvBrESGY0MtgRjtgQR8Q1bRPohn2UoCRZf9wyYANMXFeJTysqAe0I4mrherOekFdKMrYvJjLvOIUM9SuwYB5DVZUwwVjJJOaUnZCmcEkIZZrKqNvRGRMvmFZsmhP4VMKCSXBhSqUBxgMS7h0cZvEd71AWkEhGWaeMFcNnpqyJkyXgYL7PQ1MoSq0wDAkRtJIijkZSmqYTiSImfLiSWXIZwhRh3Rug2X0kk1Dgj+Iu43u5p98ghopcpSo0Uyc8SnjlYX59WUeaMoDqmVD2TOWD9a4pCRAzf2ECgwGcrHjPOWY9bNxq/OL3I/QjwEAAAA=") format("woff2");
-}`;
-  function _injectStyles(cssContent) {
-    const injected = document.createElement("style");
-    injected.innerHTML = cssContent;
-    const before = document.querySelector("head link[rel=stylesheet], head style");
-    if (before) {
-      document.head.insertBefore(injected, before);
-    } else {
-      document.head.appendChild(injected);
-    }
-  }
-  var stylesInjected = false;
-  var GUI = class _GUI {
-    /**
-     * Creates a panel that holds controllers.
-     * @example
-     * new GUI();
-     * new GUI( { container: document.getElementById( 'custom' ) } );
-     *
-     * @param {object} [options]
-     * @param {boolean} [options.autoPlace=true]
-     * Adds the GUI to `document.body` and fixes it to the top right of the page.
-     *
-     * @param {Node} [options.container]
-     * Adds the GUI to this DOM element. Overrides `autoPlace`.
-     *
-     * @param {number} [options.width=245]
-     * Width of the GUI in pixels, usually set when name labels become too long. Note that you can make
-     * name labels wider in CSS with `.lil‑gui { ‑‑name‑width: 55% }`.
-     *
-     * @param {string} [options.title=Controls]
-     * Name to display in the title bar.
-     *
-     * @param {boolean} [options.closeFolders=false]
-     * Pass `true` to close all folders in this GUI by default.
-     *
-     * @param {boolean} [options.injectStyles=true]
-     * Injects the default stylesheet into the page if this is the first GUI.
-     * Pass `false` to use your own stylesheet.
-     *
-     * @param {number} [options.touchStyles=true]
-     * Makes controllers larger on touch devices. Pass `false` to disable touch styles.
-     *
-     * @param {GUI} [options.parent]
-     * Adds this GUI as a child in another GUI. Usually this is done for you by `addFolder()`.
-     */
-    constructor({
-      parent,
-      autoPlace = parent === void 0,
-      container,
-      width,
-      title = "Controls",
-      closeFolders = false,
-      injectStyles = true,
-      touchStyles = true
-    } = {}) {
-      this.parent = parent;
-      this.root = parent ? parent.root : this;
-      this.children = [];
-      this.controllers = [];
-      this.folders = [];
-      this._closed = false;
-      this._hidden = false;
-      this.domElement = document.createElement("div");
-      this.domElement.classList.add("lil-gui");
-      this.$title = document.createElement("button");
-      this.$title.classList.add("lil-title");
-      this.$title.setAttribute("aria-expanded", true);
-      this.$title.addEventListener("click", () => this.openAnimated(this._closed));
-      this.$title.addEventListener("touchstart", () => {
-      }, { passive: true });
-      this.$children = document.createElement("div");
-      this.$children.classList.add("lil-children");
-      this.domElement.appendChild(this.$title);
-      this.domElement.appendChild(this.$children);
-      this.title(title);
-      if (this.parent) {
-        this.parent.children.push(this);
-        this.parent.folders.push(this);
-        this.parent.$children.appendChild(this.domElement);
-        return;
-      }
-      this.domElement.classList.add("lil-root");
-      if (touchStyles) {
-        this.domElement.classList.add("lil-allow-touch-styles");
-      }
-      if (!stylesInjected && injectStyles) {
-        _injectStyles(stylesheet);
-        stylesInjected = true;
-      }
-      if (container) {
-        container.appendChild(this.domElement);
-      } else if (autoPlace) {
-        this.domElement.classList.add("lil-auto-place", "autoPlace");
-        document.body.appendChild(this.domElement);
-      }
-      if (width) {
-        this.domElement.style.setProperty("--width", width + "px");
-      }
-      this._closeFolders = closeFolders;
-    }
-    /**
-     * Adds a controller to the GUI, inferring controller type using the `typeof` operator.
-     * @example
-     * gui.add( object, 'property' );
-     * gui.add( object, 'number', 0, 100, 1 );
-     * gui.add( object, 'options', [ 1, 2, 3 ] );
-     *
-     * @param {object} object The object the controller will modify.
-     * @param {string} property Name of the property to control.
-     * @param {number|object|Array} [$1] Minimum value for number controllers, or the set of
-     * selectable values for a dropdown.
-     * @param {number} [max] Maximum value for number controllers.
-     * @param {number} [step] Step value for number controllers.
-     * @returns {Controller}
-     */
-    add(object, property, $1, max, step) {
-      if (Object($1) === $1) {
-        return new OptionController(this, object, property, $1);
-      }
-      const initialValue = object[property];
-      switch (typeof initialValue) {
-        case "number":
-          return new NumberController(this, object, property, $1, max, step);
-        case "boolean":
-          return new BooleanController(this, object, property);
-        case "string":
-          return new StringController(this, object, property);
-        case "function":
-          return new FunctionController(this, object, property);
-      }
-      console.error(`gui.add failed
-	property:`, property, `
-	object:`, object, `
-	value:`, initialValue);
-    }
-    /**
-     * Adds a color controller to the GUI.
-     * @example
-     * params = {
-     * 	cssColor: '#ff00ff',
-     * 	rgbColor: { r: 0, g: 0.2, b: 0.4 },
-     * 	customRange: [ 0, 127, 255 ],
-     * };
-     *
-     * gui.addColor( params, 'cssColor' );
-     * gui.addColor( params, 'rgbColor' );
-     * gui.addColor( params, 'customRange', 255 );
-     *
-     * @param {object} object The object the controller will modify.
-     * @param {string} property Name of the property to control.
-     * @param {number} rgbScale Maximum value for a color channel when using an RGB color. You may
-     * need to set this to 255 if your colors are too bright.
-     * @returns {Controller}
-     */
-    addColor(object, property, rgbScale = 1) {
-      return new ColorController(this, object, property, rgbScale);
-    }
-    /**
-     * Adds a folder to the GUI, which is just another GUI. This method returns
-     * the nested GUI so you can add controllers to it.
-     * @example
-     * const folder = gui.addFolder( 'Position' );
-     * folder.add( position, 'x' );
-     * folder.add( position, 'y' );
-     * folder.add( position, 'z' );
-     *
-     * @param {string} title Name to display in the folder's title bar.
-     * @returns {GUI}
-     */
-    addFolder(title) {
-      const folder = new _GUI({ parent: this, title });
-      if (this.root._closeFolders) folder.close();
-      return folder;
-    }
-    /**
-     * Recalls values that were saved with `gui.save()`.
-     * @param {object} obj
-     * @param {boolean} recursive Pass false to exclude folders descending from this GUI.
-     * @returns {this}
-     */
-    load(obj, recursive = true) {
-      if (obj.controllers) {
-        this.controllers.forEach((c) => {
-          if (c instanceof FunctionController) return;
-          if (c._name in obj.controllers) {
-            c.load(obj.controllers[c._name]);
-          }
-        });
-      }
-      if (recursive && obj.folders) {
-        this.folders.forEach((f) => {
-          if (f._title in obj.folders) {
-            f.load(obj.folders[f._title]);
-          }
-        });
-      }
-      return this;
-    }
-    /**
-     * Returns an object mapping controller names to values. The object can be passed to `gui.load()` to
-     * recall these values.
-     * @example
-     * {
-     * 	controllers: {
-     * 		prop1: 1,
-     * 		prop2: 'value',
-     * 		...
-     * 	},
-     * 	folders: {
-     * 		folderName1: { controllers, folders },
-     * 		folderName2: { controllers, folders }
-     * 		...
-     * 	}
-     * }
-     *
-     * @param {boolean} recursive Pass false to exclude folders descending from this GUI.
-     * @returns {object}
-     */
-    save(recursive = true) {
-      const obj = {
-        controllers: {},
-        folders: {}
-      };
-      this.controllers.forEach((c) => {
-        if (c instanceof FunctionController) return;
-        if (c._name in obj.controllers) {
-          throw new Error(`Cannot save GUI with duplicate property "${c._name}"`);
-        }
-        obj.controllers[c._name] = c.save();
-      });
-      if (recursive) {
-        this.folders.forEach((f) => {
-          if (f._title in obj.folders) {
-            throw new Error(`Cannot save GUI with duplicate folder "${f._title}"`);
-          }
-          obj.folders[f._title] = f.save();
-        });
-      }
-      return obj;
-    }
-    /**
-     * Opens a GUI or folder. GUI and folders are open by default.
-     * @param {boolean} open Pass false to close.
-     * @returns {this}
-     * @example
-     * gui.open(); // open
-     * gui.open( false ); // close
-     * gui.open( gui._closed ); // toggle
-     */
-    open(open = true) {
-      this._setClosed(!open);
-      this.$title.setAttribute("aria-expanded", !this._closed);
-      this.domElement.classList.toggle("lil-closed", this._closed);
-      return this;
-    }
-    /**
-     * Closes the GUI.
-     * @returns {this}
-     */
-    close() {
-      return this.open(false);
-    }
-    _setClosed(closed) {
-      if (this._closed === closed) return;
-      this._closed = closed;
-      this._callOnOpenClose(this);
-    }
-    /**
-     * Shows the GUI after it's been hidden.
-     * @param {boolean} show
-     * @returns {this}
-     * @example
-     * gui.show();
-     * gui.show( false ); // hide
-     * gui.show( gui._hidden ); // toggle
-     */
-    show(show = true) {
-      this._hidden = !show;
-      this.domElement.style.display = this._hidden ? "none" : "";
-      return this;
-    }
-    /**
-     * Hides the GUI.
-     * @returns {this}
-     */
-    hide() {
-      return this.show(false);
-    }
-    openAnimated(open = true) {
-      this._setClosed(!open);
-      this.$title.setAttribute("aria-expanded", !this._closed);
-      requestAnimationFrame(() => {
-        const initialHeight = this.$children.clientHeight;
-        this.$children.style.height = initialHeight + "px";
-        this.domElement.classList.add("lil-transition");
-        const onTransitionEnd = (e) => {
-          if (e.target !== this.$children) return;
-          this.$children.style.height = "";
-          this.domElement.classList.remove("lil-transition");
-          this.$children.removeEventListener("transitionend", onTransitionEnd);
-        };
-        this.$children.addEventListener("transitionend", onTransitionEnd);
-        const targetHeight = !open ? 0 : this.$children.scrollHeight;
-        this.domElement.classList.toggle("lil-closed", !open);
-        requestAnimationFrame(() => {
-          this.$children.style.height = targetHeight + "px";
-        });
-      });
-      return this;
-    }
-    /**
-     * Change the title of this GUI.
-     * @param {string} title
-     * @returns {this}
-     */
-    title(title) {
-      this._title = title;
-      this.$title.textContent = title;
-      return this;
-    }
-    /**
-     * Resets all controllers to their initial values.
-     * @param {boolean} recursive Pass false to exclude folders descending from this GUI.
-     * @returns {this}
-     */
-    reset(recursive = true) {
-      const controllers = recursive ? this.controllersRecursive() : this.controllers;
-      controllers.forEach((c) => c.reset());
-      return this;
-    }
-    /**
-     * Pass a function to be called whenever a controller in this GUI changes.
-     * @param {function({object:object, property:string, value:any, controller:Controller})} callback
-     * @returns {this}
-     * @example
-     * gui.onChange( event => {
-     * 	event.object     // object that was modified
-     * 	event.property   // string, name of property
-     * 	event.value      // new value of controller
-     * 	event.controller // controller that was modified
-     * } );
-     */
-    onChange(callback) {
-      this._onChange = callback;
-      return this;
-    }
-    _callOnChange(controller) {
-      if (this.parent) {
-        this.parent._callOnChange(controller);
-      }
-      if (this._onChange !== void 0) {
-        this._onChange.call(this, {
-          object: controller.object,
-          property: controller.property,
-          value: controller.getValue(),
-          controller
-        });
-      }
-    }
-    /**
-     * Pass a function to be called whenever a controller in this GUI has finished changing.
-     * @param {function({object:object, property:string, value:any, controller:Controller})} callback
-     * @returns {this}
-     * @example
-     * gui.onFinishChange( event => {
-     * 	event.object     // object that was modified
-     * 	event.property   // string, name of property
-     * 	event.value      // new value of controller
-     * 	event.controller // controller that was modified
-     * } );
-     */
-    onFinishChange(callback) {
-      this._onFinishChange = callback;
-      return this;
-    }
-    _callOnFinishChange(controller) {
-      if (this.parent) {
-        this.parent._callOnFinishChange(controller);
-      }
-      if (this._onFinishChange !== void 0) {
-        this._onFinishChange.call(this, {
-          object: controller.object,
-          property: controller.property,
-          value: controller.getValue(),
-          controller
-        });
-      }
-    }
-    /**
-     * Pass a function to be called when this GUI or its descendants are opened or closed.
-     * @param {function(GUI)} callback
-     * @returns {this}
-     * @example
-     * gui.onOpenClose( changedGUI => {
-     * 	console.log( changedGUI._closed );
-     * } );
-     */
-    onOpenClose(callback) {
-      this._onOpenClose = callback;
-      return this;
-    }
-    _callOnOpenClose(changedGUI) {
-      if (this.parent) {
-        this.parent._callOnOpenClose(changedGUI);
-      }
-      if (this._onOpenClose !== void 0) {
-        this._onOpenClose.call(this, changedGUI);
-      }
-    }
-    /**
-     * Destroys all DOM elements and event listeners associated with this GUI.
-     */
-    destroy() {
-      if (this.parent) {
-        this.parent.children.splice(this.parent.children.indexOf(this), 1);
-        this.parent.folders.splice(this.parent.folders.indexOf(this), 1);
-      }
-      if (this.domElement.parentElement) {
-        this.domElement.parentElement.removeChild(this.domElement);
-      }
-      Array.from(this.children).forEach((c) => c.destroy());
-    }
-    /**
-     * Returns an array of controllers contained by this GUI and its descendents.
-     * @returns {Controller[]}
-     */
-    controllersRecursive() {
-      let controllers = Array.from(this.controllers);
-      this.folders.forEach((f) => {
-        controllers = controllers.concat(f.controllersRecursive());
-      });
-      return controllers;
-    }
-    /**
-     * Returns an array of folders contained by this GUI and its descendents.
-     * @returns {GUI[]}
-     */
-    foldersRecursive() {
-      let folders = Array.from(this.folders);
-      this.folders.forEach((f) => {
-        folders = folders.concat(f.foldersRecursive());
-      });
-      return folders;
-    }
-  };
-
   // shaders.js
   var UNIFORM_DEFAULTS = {
     lightPosition: { value: new Vector3(3, 3, 3) },
@@ -39337,56 +37629,74 @@ void main() {
   var SHADER_INFO = {
     flat: {
       name: "Flat Shading",
-      desc: "Computes a single constant color per triangle using face normals derived from screen-space derivatives. Each polygon appears as a solid, faceted patch with no interpolation across vertices.",
-      formula: "N = normalize(dFdx(vWorldPos) \xD7 dFdy(vWorldPos)) \u2192 Diffuse = Kd \xB7 max(N\xB7L, 0)"
+      stage: "PRIMITIVE",
+      desc: "Computes a constant color per triangle using screen-space derivatives of world position (dFdx \xD7 dFdy). Each polygon displays faceted shading without normal interpolation across vertices.",
+      formula: "N = normalize(dFdx(vWorldPos) \xD7 dFdy(vWorldPos))\nDiffuse = Kd \xB7 max(dot(N, L), 0.0) \xB7 Id \xB7 Color\nColor = Ambient + Diffuse (Faceted)"
     },
     gouraud: {
       name: "Gouraud Shading",
-      desc: "Evaluates the full Phong lighting equation at each vertex in the vertex shader and linearly interpolates the resulting color across the triangle. Specular highlights can appear washed out at low tessellation.",
-      formula: "vColor = Ka\xB7Ia + Kd\xB7max(N\xB7L, 0)\xB7Id + Ks\xB7pow(max(R\xB7V, 0), s)\xB7Is (evaluated per vertex)"
+      stage: "VERTEX",
+      desc: "Evaluates the complete Phong lighting model per vertex in the vertex shader, interpolating the resulting RGB color across the primitive. Fast, but highlights blur or miss between vertices.",
+      formula: "vColor = Ka\xB7Ia\xB7Cd + Kd\xB7max(N\xB7L, 0)\xB7Id\xB7Cd + Ks\xB7pow(max(R\xB7V, 0), s)\xB7Is\nFragment: gl_FragColor = vec4(vColor, 1.0)"
     },
     phong: {
       name: "Phong Shading",
-      desc: "Interpolates surface normals across the triangle and evaluates the Phong reflection model per fragment, producing smooth, accurate highlights even at moderate tessellation.",
-      formula: "R = reflect(-L, N), Specular = Ks \xB7 pow(max(dot(R, V), 0.0), shininess)"
+      stage: "FRAGMENT",
+      desc: "Interpolates smooth surface normals per fragment and evaluates reflection R = reflect(-L, N) at every pixel. Produces precise, natural specular highlights.",
+      formula: "R = reflect(-L, N)\nSpecular = Ks \xB7 pow(max(dot(R, V), 0.0), shininess) \xB7 Is\nColor = Ka\xB7Ia\xB7Cd + Kd\xB7max(N\xB7L, 0)\xB7Id\xB7Cd + Specular"
     },
     blinnphong: {
       name: "Blinn-Phong Shading",
-      desc: "A variation of Phong shading that replaces the reflection vector with a halfway vector H between the light and view directions, which is cheaper to compute and behaves better near grazing angles.",
-      formula: "H = normalize(L + V), Specular = Ks \xB7 pow(max(dot(N, H), 0.0), shininess)"
+      stage: "FRAGMENT",
+      desc: "Replaces the reflection vector with the halfway vector H = normalize(L + V). More physically plausible at grazing angles and computationally efficient.",
+      formula: "H = normalize(L + V)\nSpecular = Ks \xB7 pow(max(dot(N, H), 0.0), shininess) \xB7 Is\nColor = Ka\xB7Ia\xB7Cd + Kd\xB7max(N\xB7L, 0)\xB7Id\xB7Cd + Specular"
     },
     toon: {
       name: "Toon / Cel Shading",
-      desc: "Quantizes diffuse lighting into discrete bands to produce a hand-drawn, cartoon appearance. Specular is a hard binary step, creating a crisp highlight blob.",
-      formula: "quantDiff = floor(N\xB7L \xB7 bands) / bands, Specular = step(0.6, specRaw)"
+      stage: "FRAGMENT",
+      desc: "Quantizes continuous diffuse illumination into discrete stepped luminance bands with hard specular thresholding for an illustrative graphic novel appearance.",
+      formula: "quantDiff = floor(max(dot(N, L), 0) \xB7 bands) / bands\nSpecular = step(0.6, pow(max(dot(N, H), 0), s))\nColor = Ambient + Kd\xB7quantDiff\xB7Id + Ks\xB7Specular"
     },
     normalmap: {
-      name: "Procedural Bump / Normal Mapping",
-      desc: "Perturbs the interpolated surface normal using screen-space derivatives of a procedural sin/cos height field, then shades with Blinn-Phong using the bumped normal. No external texture required.",
-      formula: "h = sin(8x)\xB7cos(8y)\xB7sin(6z), N\u2032 = normalize(N - bumpStrength \xB7 \u2207h)"
+      name: "Procedural Bump Mapping",
+      stage: "FRAGMENT",
+      desc: "Evaluates a 3D procedural harmonic height field h(p) and perturbs the interpolated normal via finite-difference gradient: N\u2032 = normalize(N - strength \xB7 \u2207h).",
+      formula: "h(p) = sin(8x)\xB7cos(8y)\xB7sin(6z)\n\u2207h = vec3(h(p+\u03B5x)-h(p), h(p+\u03B5y)-h(p), h(p+\u03B5z)-h(p)) / \u03B5\nN\u2032 = normalize(N - bumpStrength \xB7 \u2207h)"
     },
     orennayar: {
       name: "Oren-Nayar Diffuse",
-      desc: "Models rough matte surfaces by accounting for inter-microfacet masking and shadowing. Unlike Lambertian diffuse it brightens limbs at high roughness, mimicking materials like clay or fabric.",
-      formula: "L = Kd \xB7 (A + B \xB7 sin(\u03B1) \xB7 tan(\u03B2) \xB7 max(0, cos(\u03C6\u1D62 - \u03C6\u1D63))) \xB7 (N\xB7L)"
+      stage: "FRAGMENT",
+      desc: "Microfacet reflectance model for rough, matte surfaces (clay, chalk, skin, fabric). Accounts for microscopic inter-facet masking and limb brightening.",
+      formula: "L = Kd \xB7 (A + B \xB7 sin(\u03B1) \xB7 tan(\u03B2) \xB7 max(0, cos(\u03C6\u1D62 - \u03C6\u1D63))) \xB7 (N\xB7L)\nA = 1 - 0.5\xB7\u03C3\xB2/(\u03C3\xB2 + 0.33), B = 0.45\xB7\u03C3\xB2/(\u03C3\xB2 + 0.09)"
     }
   };
+  var SHADER_DISPLAY_NAMES = {
+    flat: "Flat",
+    gouraud: "Gouraud",
+    phong: "Phong",
+    blinnphong: "Blinn-Phong",
+    toon: "Toon / Cel",
+    normalmap: "Bump Map",
+    orennayar: "Oren-Nayar"
+  };
+  var KEY_SHADERS = ["flat", "gouraud", "phong", "blinnphong", "toon", "normalmap", "orennayar"];
   var viewportContainer = document.getElementById("viewport-container");
   var renderer = new WebGLRenderer({
     canvas: document.getElementById("viewport"),
     antialias: true,
     powerPreference: "high-performance"
   });
-  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   var scene = new Scene();
-  scene.background = new Color(1118481);
+  scene.background = new Color(461327);
   var camera = new PerspectiveCamera(45, 1, 0.1, 100);
-  camera.position.set(0, 1, 4);
-  var DEFAULT_CAMERA_POS = new Vector3(0, 1, 4);
+  camera.position.set(0, 1.2, 4);
+  var DEFAULT_CAMERA_POS = new Vector3(0, 1.2, 4);
   var DEFAULT_CAMERA_TARGET = new Vector3(0, 0, 0);
   var orbitControls = new OrbitControls(camera, renderer.domElement);
   orbitControls.enableDamping = true;
   orbitControls.dampingFactor = 0.08;
+  orbitControls.target.copy(DEFAULT_CAMERA_TARGET);
   function updateSize() {
     const w = viewportContainer.clientWidth;
     const h = viewportContainer.clientHeight;
@@ -39450,6 +37760,33 @@ void main() {
     lightCore.material.color.set(c);
     uniforms.lightIntensity.value = lightParams.intensity;
     uniforms.ambientIntensity.value = lightParams.ambientIntensity;
+    syncLightUI();
+  }
+  function syncLightUI() {
+    const inputAz = document.getElementById("input-azimuth");
+    const valAz = document.getElementById("val-azimuth");
+    if (inputAz) inputAz.value = Math.round(lightParams.azimuth);
+    if (valAz) valAz.textContent = Math.round(lightParams.azimuth) + "\xB0";
+    const inputEl = document.getElementById("input-elevation");
+    const valEl = document.getElementById("val-elevation");
+    if (inputEl) inputEl.value = Math.round(lightParams.elevation);
+    if (valEl) valEl.textContent = Math.round(lightParams.elevation) + "\xB0";
+    const inputDist = document.getElementById("input-distance");
+    const valDist = document.getElementById("val-distance");
+    if (inputDist) inputDist.value = lightParams.distance;
+    if (valDist) valDist.textContent = lightParams.distance.toFixed(1);
+    const inputInt = document.getElementById("input-light-intensity");
+    const valInt = document.getElementById("val-intensity");
+    if (inputInt) inputInt.value = lightParams.intensity;
+    if (valInt) valInt.textContent = lightParams.intensity.toFixed(2);
+    const inputAmb = document.getElementById("input-ambient");
+    const valAmb = document.getElementById("val-ambient");
+    if (inputAmb) inputAmb.value = lightParams.ambientIntensity;
+    if (valAmb) valAmb.textContent = lightParams.ambientIntensity.toFixed(2);
+    const inputColor = document.getElementById("input-light-color");
+    const previewColor = document.getElementById("light-color-preview");
+    if (inputColor) inputColor.value = lightParams.color;
+    if (previewColor) previewColor.textContent = lightParams.color;
   }
   updateLightFromSpherical();
   var altDragging = false;
@@ -39470,11 +37807,9 @@ void main() {
     const dy = e.clientY - lastMouseY;
     lastMouseX = e.clientX;
     lastMouseY = e.clientY;
-    lightParams.azimuth = (lightParams.azimuth + dx * 0.5) % 360;
+    lightParams.azimuth = (lightParams.azimuth + dx * 0.5 + 360) % 360;
     lightParams.elevation = MathUtils.clamp(lightParams.elevation - dy * 0.3, -89, 89);
     updateLightFromSpherical();
-    if (guiControllers.azimuth) guiControllers.azimuth.updateDisplay();
-    if (guiControllers.elevation) guiControllers.elevation.updateDisplay();
   });
   function endAltDrag() {
     altDragging = false;
@@ -39484,9 +37819,9 @@ void main() {
   renderer.domElement.addEventListener("mouseleave", endAltDrag);
   var PRESETS = {
     "Sphere": () => new SphereGeometry(1, 64, 64),
-    "Cube": () => new BoxGeometry(1.5, 1.5, 1.5),
-    "Torus Knot": () => new TorusKnotGeometry(0.7, 0.25, 128, 32),
     "Teapot": () => new TeapotGeometry(0.8, 10),
+    "Torus Knot": () => new TorusKnotGeometry(0.7, 0.25, 128, 32),
+    "Cube": () => new BoxGeometry(1.5, 1.5, 1.5),
     "Icosahedron": () => new IcosahedronGeometry(1, 4),
     "Cylinder": () => new CylinderGeometry(0.6, 0.6, 1.5, 64),
     "Cone": () => new ConeGeometry(0.8, 1.6, 64)
@@ -39520,12 +37855,21 @@ void main() {
   }
   function loadPreset(name) {
     hideOverlays();
-    state.preset = name;
-    if (guiControllers.preset) guiControllers.preset.updateDisplay();
-    const geo = PRESETS[name]();
+    const geoFn = PRESETS[name];
+    if (!geoFn) return;
+    const geo = geoFn();
     fitAndAdd(geo);
-    const el = document.getElementById("status-model");
-    if (el) el.textContent = "Model: " + name;
+    const hudEl = document.getElementById("hud-model-name");
+    if (hudEl) hudEl.textContent = name;
+    const activeBadge = document.getElementById("active-model-name");
+    if (activeBadge) activeBadge.textContent = name;
+    const statusEl = document.getElementById("status-model");
+    if (statusEl) statusEl.textContent = "Mesh: " + name;
+    document.querySelectorAll(".preset-btn").forEach((btn) => {
+      const isActive = btn.dataset.preset === name;
+      btn.classList.toggle("active", isActive);
+      btn.setAttribute("aria-checked", isActive ? "true" : "false");
+    });
   }
   function showLoading(show) {
     const el = document.getElementById("loading-overlay");
@@ -39589,11 +37933,18 @@ void main() {
       }
       fitAndAdd(geo);
       showLoading(false);
+      const displayName = file.name.replace(/\.[^/.]+$/, "");
+      const hudEl = document.getElementById("hud-model-name");
+      if (hudEl) hudEl.textContent = displayName;
+      const activeBadge = document.getElementById("active-model-name");
+      if (activeBadge) activeBadge.textContent = "Custom";
+      const statusEl = document.getElementById("status-model");
+      if (statusEl) statusEl.textContent = "Mesh: " + displayName;
     };
     const onError = (err) => {
       URL.revokeObjectURL(url);
       showLoading(false);
-      showError(err?.message || "Failed to load model.");
+      showError(err?.message || "Failed to parse model file.");
     };
     if (name.endsWith(".obj")) {
       new OBJLoader().load(url, onLoad, void 0, onError);
@@ -39604,13 +37955,12 @@ void main() {
     } else {
       URL.revokeObjectURL(url);
       showLoading(false);
-      showError("Unsupported file format. Use .obj, .glb, .gltf or .stl");
+      showError("Unsupported format. Please select .obj, .glb, .gltf, or .stl");
     }
   }
   function setShader(key) {
     currentShaderKey = key;
-    state.shaderName = SHADER_DISPLAY_NAMES[key] || key;
-    if (guiControllers.shaderName) guiControllers.shaderName.updateDisplay();
+    const displayName = SHADER_DISPLAY_NAMES[key] || key;
     if (currentMesh) {
       if (currentMesh.material) currentMesh.material.dispose();
       currentMesh.material = new ShaderMaterial({
@@ -39627,8 +37977,20 @@ void main() {
       btn.classList.toggle("active", isActive);
       btn.setAttribute("aria-selected", isActive ? "true" : "false");
     });
-    const el = document.getElementById("status-shader");
-    if (el) el.textContent = "Shader: " + (SHADER_DISPLAY_NAMES[key] || key);
+    const hudShader = document.getElementById("hud-shader-name");
+    if (hudShader) hudShader.textContent = displayName + " Shading";
+    const statusEl = document.getElementById("status-shader");
+    if (statusEl) statusEl.textContent = "Shader: " + displayName;
+    const stageBadge = document.getElementById("shader-stage-badge");
+    if (stageBadge && SHADER_INFO[key]) {
+      stageBadge.textContent = SHADER_INFO[key].stage;
+    }
+    const rowRoughness = document.getElementById("row-roughness");
+    if (rowRoughness) rowRoughness.classList.toggle("hidden", key !== "orennayar");
+    const rowToon = document.getElementById("row-toon");
+    if (rowToon) rowToon.classList.toggle("hidden", key !== "toon");
+    const rowBump = document.getElementById("row-bump");
+    if (rowBump) rowBump.classList.toggle("hidden", key !== "normalmap");
   }
   function updateInfoPanel(key) {
     const titleEl = document.getElementById("info-title");
@@ -39650,120 +38012,135 @@ void main() {
     orbitControls.target.copy(DEFAULT_CAMERA_TARGET);
     orbitControls.update();
   }
-  var SHADER_DISPLAY_NAMES = {
-    flat: "Flat",
-    gouraud: "Gouraud",
-    phong: "Phong",
-    blinnphong: "Blinn-Phong",
-    toon: "Toon / Cel",
-    normalmap: "Procedural Bump",
-    orennayar: "Oren-Nayar"
-  };
-  var SHADER_KEYS = ["flat", "gouraud", "phong", "blinnphong", "toon", "normalmap", "orennayar"];
-  var SHADER_NAME_TO_KEY = {};
-  SHADER_KEYS.forEach((k) => {
-    SHADER_NAME_TO_KEY[SHADER_DISPLAY_NAMES[k]] = k;
-  });
-  var state = {
-    preset: "Sphere",
-    shaderName: SHADER_DISPLAY_NAMES["phong"],
-    uploadModel: () => {
-      fileInput.click();
-    },
-    resetCamera,
-    // light
-    azimuth: lightParams.azimuth,
-    elevation: lightParams.elevation,
-    distance: lightParams.distance,
-    lightColor: lightParams.color,
-    intensity: lightParams.intensity,
-    ambientIntensity: lightParams.ambientIntensity,
-    autoOrbit: lightParams.autoOrbit,
-    orbitSpeed: lightParams.orbitSpeed,
-    // material
-    Ka: uniforms.Ka.value,
-    Kd: uniforms.Kd.value,
-    Ks: uniforms.Ks.value,
-    shininess: uniforms.shininess.value,
-    roughness: uniforms.roughness.value,
-    toonBands: uniforms.toonBands.value,
-    bumpStrength: uniforms.bumpStrength.value,
-    objectColor: "#" + new Color(
-      uniforms.objectColor.value.r,
-      uniforms.objectColor.value.g,
-      uniforms.objectColor.value.b
-    ).getHexString()
-  };
-  var fileInput = document.getElementById("file-upload") || document.createElement("input");
-  fileInput.type = "file";
-  fileInput.accept = ".obj,.glb,.gltf,.stl";
-  fileInput.style.display = "none";
-  if (!fileInput.parentElement) document.body.appendChild(fileInput);
-  fileInput.addEventListener("change", (e) => {
-    if (e.target.files && e.target.files[0]) handleUpload(e.target.files[0]);
-    fileInput.value = "";
-  });
-  var guiControllers = {};
-  function createGUI() {
-    const gui = new GUI({ container: document.getElementById("gui-container"), width: 280 });
-    const modelFolder = gui.addFolder("Model");
-    guiControllers.preset = modelFolder.add(state, "preset", Object.keys(PRESETS)).name("Preset").onChange(loadPreset);
-    modelFolder.add(state, "uploadModel").name("Upload (.obj / .glb / .stl)");
-    modelFolder.open();
-    const shadingFolder = gui.addFolder("Shading");
-    guiControllers.shaderName = shadingFolder.add(state, "shaderName", Object.values(SHADER_DISPLAY_NAMES)).name("Shader").onChange((displayName) => {
-      const key = SHADER_NAME_TO_KEY[displayName];
-      if (key) setShader(key);
+  function bindStudioControls() {
+    document.querySelectorAll(".preset-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const p = btn.dataset.preset;
+        if (p) loadPreset(p);
+      });
     });
-    shadingFolder.open();
-    const lightFolder = gui.addFolder("Light");
-    guiControllers.azimuth = lightFolder.add(lightParams, "azimuth", 0, 360).name("Azimuth").onChange(() => {
-      state.azimuth = lightParams.azimuth;
-      updateLightFromSpherical();
+    const uploadBtn = document.getElementById("btn-upload");
+    const fileInputEl = document.getElementById("file-upload");
+    if (uploadBtn && fileInputEl) {
+      uploadBtn.addEventListener("click", () => fileInputEl.click());
+      fileInputEl.addEventListener("change", (e) => {
+        if (e.target.files && e.target.files[0]) handleUpload(e.target.files[0]);
+        fileInputEl.value = "";
+      });
+    }
+    const inputAz = document.getElementById("input-azimuth");
+    if (inputAz) {
+      inputAz.addEventListener("input", (e) => {
+        lightParams.azimuth = parseFloat(e.target.value);
+        updateLightFromSpherical();
+      });
+    }
+    const inputEl = document.getElementById("input-elevation");
+    if (inputEl) {
+      inputEl.addEventListener("input", (e) => {
+        lightParams.elevation = parseFloat(e.target.value);
+        updateLightFromSpherical();
+      });
+    }
+    const inputDist = document.getElementById("input-distance");
+    if (inputDist) {
+      inputDist.addEventListener("input", (e) => {
+        lightParams.distance = parseFloat(e.target.value);
+        updateLightFromSpherical();
+      });
+    }
+    document.querySelectorAll(".angle-chip").forEach((chip) => {
+      chip.addEventListener("click", () => {
+        lightParams.azimuth = parseFloat(chip.dataset.az);
+        lightParams.elevation = parseFloat(chip.dataset.el);
+        updateLightFromSpherical();
+      });
     });
-    guiControllers.elevation = lightFolder.add(lightParams, "elevation", -89, 89).name("Elevation").onChange(() => {
-      state.elevation = lightParams.elevation;
-      updateLightFromSpherical();
-    });
-    lightFolder.add(lightParams, "distance", 1, 5).name("Distance").onChange(updateLightFromSpherical);
-    lightFolder.addColor(lightParams, "color").name("Color").onChange(updateLightFromSpherical);
-    lightFolder.add(lightParams, "intensity", 0, 3).name("Intensity").onChange(updateLightFromSpherical);
-    lightFolder.add(lightParams, "ambientIntensity", 0, 1).name("Ambient").onChange(updateLightFromSpherical);
-    lightFolder.add(lightParams, "autoOrbit").name("Auto-Orbit").onChange((v) => {
-      lightParams.autoOrbit = v;
-    });
-    lightFolder.add(lightParams, "orbitSpeed", 0.1, 5).name("Orbit Speed");
-    lightFolder.open();
-    const matFolder = gui.addFolder("Material");
-    matFolder.add(state, "Ka", 0, 1).name("Ka (ambient)").onChange((v) => {
+    const inputColor = document.getElementById("input-light-color");
+    if (inputColor) {
+      inputColor.addEventListener("input", (e) => {
+        lightParams.color = e.target.value;
+        updateLightFromSpherical();
+      });
+    }
+    const inputInt = document.getElementById("input-light-intensity");
+    if (inputInt) {
+      inputInt.addEventListener("input", (e) => {
+        lightParams.intensity = parseFloat(e.target.value);
+        updateLightFromSpherical();
+      });
+    }
+    const inputAmb = document.getElementById("input-ambient");
+    if (inputAmb) {
+      inputAmb.addEventListener("input", (e) => {
+        lightParams.ambientIntensity = parseFloat(e.target.value);
+        updateLightFromSpherical();
+      });
+    }
+    const btnAutoOrbit = document.getElementById("btn-auto-orbit");
+    if (btnAutoOrbit) {
+      btnAutoOrbit.addEventListener("click", () => {
+        lightParams.autoOrbit = !lightParams.autoOrbit;
+        btnAutoOrbit.classList.toggle("active", lightParams.autoOrbit);
+      });
+    }
+    const inputObjColor = document.getElementById("input-object-color");
+    const previewObjColor = document.getElementById("object-color-preview");
+    if (inputObjColor) {
+      inputObjColor.addEventListener("input", (e) => {
+        const hex = e.target.value;
+        if (previewObjColor) previewObjColor.textContent = hex;
+        const c = new Color(hex);
+        uniforms.objectColor.value.set(c.r, c.g, c.b);
+      });
+    }
+    const bindSlider = (id, valId, callback, formatFn) => {
+      const el = document.getElementById(id);
+      const valEl = document.getElementById(valId);
+      if (!el) return;
+      el.addEventListener("input", (e) => {
+        const v = parseFloat(e.target.value);
+        callback(v);
+        if (valEl) valEl.textContent = formatFn ? formatFn(v) : v;
+      });
+    };
+    bindSlider("input-ka", "val-ka", (v) => {
       uniforms.Ka.value = v;
-    });
-    matFolder.add(state, "Kd", 0, 1).name("Kd (diffuse)").onChange((v) => {
+    }, (v) => v.toFixed(2));
+    bindSlider("input-kd", "val-kd", (v) => {
       uniforms.Kd.value = v;
-    });
-    matFolder.add(state, "Ks", 0, 1).name("Ks (specular)").onChange((v) => {
+    }, (v) => v.toFixed(2));
+    bindSlider("input-ks", "val-ks", (v) => {
       uniforms.Ks.value = v;
-    });
-    matFolder.add(state, "shininess", 1, 256, 1).name("Shininess").onChange((v) => {
+    }, (v) => v.toFixed(2));
+    bindSlider("input-shininess", "val-shininess", (v) => {
       uniforms.shininess.value = v;
-    });
-    matFolder.add(state, "roughness", 0, 1).name("Roughness (\u03C3)").onChange((v) => {
+    }, (v) => Math.round(v));
+    bindSlider("input-roughness", "val-roughness", (v) => {
       uniforms.roughness.value = v;
-    });
-    matFolder.add(state, "toonBands", 2, 8, 1).name("Toon Bands").onChange((v) => {
-      uniforms.toonBands.value = v;
-    });
-    matFolder.add(state, "bumpStrength", 0, 2).name("Bump Strength").onChange((v) => {
+    }, (v) => v.toFixed(2));
+    bindSlider("input-toon-bands", "val-toon-bands", (v) => {
+      uniforms.toonBands.value = Math.round(v);
+    }, (v) => Math.round(v));
+    bindSlider("input-bump", "val-bump", (v) => {
       uniforms.bumpStrength.value = v;
+    }, (v) => v.toFixed(2));
+    const btnReset = document.getElementById("btn-reset-cam");
+    if (btnReset) btnReset.addEventListener("click", resetCamera);
+    const btnToggleLight = document.getElementById("btn-toggle-light");
+    if (btnToggleLight) {
+      btnToggleLight.addEventListener("click", () => {
+        lightGroup.visible = !lightGroup.visible;
+        btnToggleLight.classList.toggle("active", lightGroup.visible);
+      });
+    }
+    document.querySelectorAll(".shader-tab").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const key = btn.dataset.shader;
+        if (key) setShader(key);
+      });
     });
-    matFolder.addColor(state, "objectColor").name("Object Color").onChange((hex) => {
-      const c = new Color(hex);
-      uniforms.objectColor.value.set(c.r, c.g, c.b);
-    });
-    matFolder.open();
-    gui.add(state, "resetCamera").name("\u27F3 Reset Camera");
   }
-  var KEY_SHADERS = ["flat", "gouraud", "phong", "blinnphong", "toon", "normalmap", "orennayar"];
   window.addEventListener("keydown", (e) => {
     if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
     const digit = parseInt(e.key, 10);
@@ -39776,12 +38153,18 @@ void main() {
       case "R":
         resetCamera();
         break;
-      case "L":
+      case "L": {
         lightGroup.visible = !lightGroup.visible;
+        const btn = document.getElementById("btn-toggle-light");
+        if (btn) btn.classList.toggle("active", lightGroup.visible);
         break;
-      case "A":
+      }
+      case "A": {
         lightParams.autoOrbit = !lightParams.autoOrbit;
+        const btn = document.getElementById("btn-auto-orbit");
+        if (btn) btn.classList.toggle("active", lightParams.autoOrbit);
         break;
+      }
     }
   });
   var lastTime = performance.now();
@@ -39804,26 +38187,12 @@ void main() {
     if (lightParams.autoOrbit) {
       lightParams.azimuth = (lightParams.azimuth + delta * lightParams.orbitSpeed * 60) % 360;
       updateLightFromSpherical();
-      if (guiControllers.azimuth) guiControllers.azimuth.updateDisplay();
     }
     orbitControls.update();
     renderer.render(scene, camera);
   }
-  document.querySelectorAll(".shader-tab").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const key = btn.dataset.shader;
-      if (key) setShader(key);
-    });
-  });
-  var errorDialog = document.getElementById("error-dialog");
-  var errorDismiss = document.getElementById("error-dismiss");
-  if (errorDismiss && errorDialog) {
-    errorDismiss.addEventListener("click", () => {
-      errorDialog.close();
-    });
-  }
+  bindStudioControls();
   loadPreset("Sphere");
-  createGUI();
   setShader("phong");
   animate();
 })();
@@ -39835,14 +38204,5 @@ three/build/three.module.js:
    * @license
    * Copyright 2010-2026 Three.js Authors
    * SPDX-License-Identifier: MIT
-   *)
-
-lil-gui/dist/lil-gui.esm.js:
-  (**
-   * lil-gui
-   * https://lil-gui.georgealways.com
-   * @version 0.21.0
-   * @author George Michael Brower
-   * @license MIT
    *)
 */

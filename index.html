@@ -4,37 +4,81 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
-  <meta name="description" content="Interactive 3D Model Graphics Shading Viewer with 360-degree controllable lighting and real-time custom GLSL shaders.">
-  <title>3D Shading Viewer | Real-time WebGL Shading Models</title>
+  <meta name="description" content="Interactive 3D Graphics Shading Laboratory with 360-degree controllable lighting and real-time custom GLSL shaders.">
+  <title>LUMINA // 3D Shading & Illumination Laboratory</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <a href="#viewport-container" class="skip-link visually-hidden">Skip to 3D canvas</a>
 
-  <!-- HEADER with title and shading mode tabs -->
+  <!-- TOP STUDIO TOOLBAR -->
   <header id="header">
-    <h1>🔆 3D Shading Viewer</h1>
+    <div class="brand-group">
+      <div class="brand-logo" aria-hidden="true">✦</div>
+      <div>
+        <h1 class="brand-title">LUMINA</h1>
+        <span class="brand-subtitle">3D Shading Lab</span>
+      </div>
+    </div>
+
+    <!-- 7 Shading Models Tabs with Keycap Badges -->
     <nav id="shader-tabs" role="tablist" aria-label="Shading Models">
-      <button class="shader-tab" role="tab" aria-selected="false" data-shader="flat">Flat</button>
-      <button class="shader-tab" role="tab" aria-selected="false" data-shader="gouraud">Gouraud</button>
-      <button class="shader-tab active" role="tab" aria-selected="true" data-shader="phong">Phong</button>
-      <button class="shader-tab" role="tab" aria-selected="false" data-shader="blinnphong">Blinn-Phong</button>
-      <button class="shader-tab" role="tab" aria-selected="false" data-shader="toon">Toon</button>
-      <button class="shader-tab" role="tab" aria-selected="false" data-shader="normalmap">Normal Map</button>
-      <button class="shader-tab" role="tab" aria-selected="false" data-shader="orennayar">Oren-Nayar</button>
+      <button class="shader-tab" role="tab" aria-selected="false" data-shader="flat">
+        <span>Flat</span><kbd>1</kbd>
+      </button>
+      <button class="shader-tab" role="tab" aria-selected="false" data-shader="gouraud">
+        <span>Gouraud</span><kbd>2</kbd>
+      </button>
+      <button class="shader-tab active" role="tab" aria-selected="true" data-shader="phong">
+        <span>Phong</span><kbd>3</kbd>
+      </button>
+      <button class="shader-tab" role="tab" aria-selected="false" data-shader="blinnphong">
+        <span>Blinn-Phong</span><kbd>4</kbd>
+      </button>
+      <button class="shader-tab" role="tab" aria-selected="false" data-shader="toon">
+        <span>Toon / Cel</span><kbd>5</kbd>
+      </button>
+      <button class="shader-tab" role="tab" aria-selected="false" data-shader="normalmap">
+        <span>Bump Map</span><kbd>6</kbd>
+      </button>
+      <button class="shader-tab" role="tab" aria-selected="false" data-shader="orennayar">
+        <span>Oren-Nayar</span><kbd>7</kbd>
+      </button>
     </nav>
-    <div id="fps-counter" aria-label="Frames per second">-- fps</div>
+
+    <!-- Header Actions -->
+    <div class="header-actions">
+      <button type="button" id="btn-reset-cam" class="action-btn" title="Reset Camera Position (Key R)">
+        <span>⟳</span> Reset
+      </button>
+      <button type="button" id="btn-toggle-light" class="action-btn" title="Toggle Light Orb & Guide Ray (Key L)">
+        <span>💡</span> Light
+      </button>
+      <div id="fps-counter" aria-label="Frames per second">-- fps</div>
+    </div>
   </header>
 
+  <!-- MAIN WORKBENCH -->
   <main id="main-layout">
-    <!-- LEFT: Canvas viewport -->
+    <!-- LEFT: 3D Viewport -->
     <div id="viewport-container" tabindex="-1">
-      <canvas id="viewport" aria-label="Interactive 3D scene preview"></canvas>
+      <canvas id="viewport" aria-label="Interactive 3D viewport canvas"></canvas>
+
+      <!-- Viewport HUD Overlay -->
+      <div class="viewport-hud-top" aria-hidden="true">
+        <div class="hud-badge">
+          <span class="hud-dot"></span>
+          <span id="hud-model-name">Sphere</span>
+        </div>
+        <div class="hud-badge secondary">
+          <span id="hud-shader-name">Phong Shading</span>
+        </div>
+      </div>
 
       <!-- Loading overlay -->
       <div id="loading-overlay" class="hidden" role="status" aria-live="polite">
         <div class="spinner" aria-hidden="true"></div>
-        <p>Loading 3D model…</p>
+        <p>Tessellating 3D geometry…</p>
       </div>
 
       <!-- Native Error Dialog (Modern Dialog API) -->
@@ -46,32 +90,227 @@
         </form>
       </dialog>
 
-      <!-- Light drag hint -->
-      <div id="light-hint" aria-hidden="true">Alt + Drag → Move Light 360°</div>
+      <!-- Interactive gesture hint -->
+      <div id="light-hint" aria-hidden="true">
+        <span class="key-pill">Alt + Drag</span> Move Light 360° &nbsp;•&nbsp; 
+        <span class="key-pill">Left Drag</span> Orbit Camera &nbsp;•&nbsp; 
+        <span class="key-pill">Scroll</span> Zoom
+      </div>
     </div>
 
-    <!-- RIGHT: Control panel -->
-    <aside id="control-panel" aria-label="Controls and Parameters">
-      <!-- lil-gui mounts here -->
-      <div id="gui-container"></div>
+    <!-- RIGHT: Studio Parameter Control Panel -->
+    <aside id="control-panel" aria-label="Studio Parameters Workbench">
 
-      <!-- Info panel (shader description) -->
-      <section id="info-panel" aria-label="Shader Details">
-        <h3 id="info-title">Phong Shading</h3>
-        <p id="info-desc">Per-fragment lighting with smooth specular highlights.</p>
-        <div id="info-formula"></div>
+      <!-- Section 1: Geometry -->
+      <section class="control-section" aria-labelledby="heading-model">
+        <div class="section-header">
+          <span class="section-icon">◈</span>
+          <h2 id="heading-model" class="section-title">Geometry</h2>
+          <span class="active-badge" id="active-model-name">Sphere</span>
+        </div>
+        <div class="preset-grid" role="radiogroup" aria-label="3D Model Presets">
+          <button type="button" class="preset-btn active" data-preset="Sphere" role="radio" aria-checked="true">
+            <span class="preset-glyph">⚪</span><span>Sphere</span>
+          </button>
+          <button type="button" class="preset-btn" data-preset="Teapot" role="radio" aria-checked="false">
+            <span class="preset-glyph">🫖</span><span>Teapot</span>
+          </button>
+          <button type="button" class="preset-btn" data-preset="Torus Knot" role="radio" aria-checked="false">
+            <span class="preset-glyph">➰</span><span>Torus Knot</span>
+          </button>
+          <button type="button" class="preset-btn" data-preset="Cube" role="radio" aria-checked="false">
+            <span class="preset-glyph">🧊</span><span>Cube</span>
+          </button>
+          <button type="button" class="preset-btn" data-preset="Icosahedron" role="radio" aria-checked="false">
+            <span class="preset-glyph">💎</span><span>Icosahedron</span>
+          </button>
+          <button type="button" class="preset-btn" data-preset="Cylinder" role="radio" aria-checked="false">
+            <span class="preset-glyph">🥫</span><span>Cylinder</span>
+          </button>
+          <button type="button" class="preset-btn" data-preset="Cone" role="radio" aria-checked="false">
+            <span class="preset-glyph">🔺</span><span>Cone</span>
+          </button>
+        </div>
+        <button type="button" id="btn-upload" class="upload-btn">
+          <span>📁</span> Upload Custom Mesh (.obj, .gltf, .stl)
+        </button>
+        <input type="file" id="file-upload" accept=".obj,.gltf,.glb,.stl" style="display:none" aria-label="Upload custom 3D model">
       </section>
 
-      <!-- Hidden file input for upload -->
-      <input type="file" id="file-upload" accept=".obj,.gltf,.glb,.stl" style="display:none" aria-label="Upload custom 3D model">
+      <!-- Section 2: Illumination Studio -->
+      <section class="control-section" aria-labelledby="heading-light">
+        <div class="section-header">
+          <span class="section-icon">🔆</span>
+          <h2 id="heading-light" class="section-title">Light Source (360°)</h2>
+          <button type="button" id="btn-auto-orbit" class="pill-toggle" title="Toggle Auto-Orbit (Key A)">
+            <span class="pulse-dot"></span> <span id="auto-orbit-text">Auto-Orbit</span>
+          </button>
+        </div>
+
+        <div class="control-row">
+          <div class="control-label">
+            <span>Azimuth (Horizontal 360°)</span>
+            <span id="val-azimuth" class="val-pill">45°</span>
+          </div>
+          <input type="range" id="input-azimuth" min="0" max="360" value="45" step="1" aria-label="Light azimuth angle">
+        </div>
+
+        <div class="control-row">
+          <div class="control-label">
+            <span>Elevation (Vertical)</span>
+            <span id="val-elevation" class="val-pill">45°</span>
+          </div>
+          <input type="range" id="input-elevation" min="-89" max="89" value="45" step="1" aria-label="Light elevation angle">
+        </div>
+
+        <div class="control-row">
+          <div class="control-label">
+            <span>Radial Distance</span>
+            <span id="val-distance" class="val-pill">3.0</span>
+          </div>
+          <input type="range" id="input-distance" min="1" max="5" value="3" step="0.1" aria-label="Light distance">
+        </div>
+
+        <!-- Quick Light Angles -->
+        <div class="preset-angles" aria-label="Quick lighting presets">
+          <button type="button" class="angle-chip" data-az="45" data-el="45">Key 45°</button>
+          <button type="button" class="angle-chip" data-az="225" data-el="25">Fill 225°</button>
+          <button type="button" class="angle-chip" data-az="180" data-el="10">Rim 180°</button>
+          <button type="button" class="angle-chip" data-az="0" data-el="85">Top Down</button>
+        </div>
+
+        <div class="dual-inputs">
+          <div class="control-item">
+            <span class="sub-label">Light Color</span>
+            <div class="color-picker-wrap">
+              <input type="color" id="input-light-color" value="#ffffff" aria-label="Light color">
+              <span id="light-color-preview" class="color-hex">#ffffff</span>
+            </div>
+          </div>
+          <div class="control-item">
+            <span class="sub-label">Intensity (<span id="val-intensity">1.0</span>)</span>
+            <input type="range" id="input-light-intensity" min="0" max="3" value="1.0" step="0.05" aria-label="Light intensity">
+          </div>
+        </div>
+
+        <div class="control-row">
+          <div class="control-label">
+            <span>Ambient Illumination</span>
+            <span id="val-ambient" class="val-pill">0.30</span>
+          </div>
+          <input type="range" id="input-ambient" min="0" max="1" value="0.3" step="0.05" aria-label="Ambient intensity">
+        </div>
+      </section>
+
+      <!-- Section 3: Surface Material -->
+      <section class="control-section" aria-labelledby="heading-material">
+        <div class="section-header">
+          <span class="section-icon">⚗️</span>
+          <h2 id="heading-material" class="section-title">Surface Material</h2>
+        </div>
+
+        <div class="color-row">
+          <span class="sub-label">Object Base Tint</span>
+          <div class="color-picker-wrap">
+            <input type="color" id="input-object-color" value="#4488ff" aria-label="Object base color">
+            <span id="object-color-preview" class="color-hex">#4488ff</span>
+          </div>
+        </div>
+
+        <div class="slider-grid">
+          <div class="slider-field">
+            <div class="control-label">
+              <span>Ka (Ambient)</span>
+              <span id="val-ka" class="val-pill">1.0</span>
+            </div>
+            <input type="range" id="input-ka" min="0" max="1" value="1.0" step="0.05" aria-label="Ka ambient coefficient">
+          </div>
+          <div class="slider-field">
+            <div class="control-label">
+              <span>Kd (Diffuse)</span>
+              <span id="val-kd" class="val-pill">0.8</span>
+            </div>
+            <input type="range" id="input-kd" min="0" max="1" value="0.8" step="0.05" aria-label="Kd diffuse coefficient">
+          </div>
+        </div>
+
+        <div class="slider-grid">
+          <div class="slider-field">
+            <div class="control-label">
+              <span>Ks (Specular)</span>
+              <span id="val-ks" class="val-pill">0.5</span>
+            </div>
+            <input type="range" id="input-ks" min="0" max="1" value="0.5" step="0.05" aria-label="Ks specular coefficient">
+          </div>
+          <div class="slider-field">
+            <div class="control-label">
+              <span>Shininess (s)</span>
+              <span id="val-shininess" class="val-pill">32</span>
+            </div>
+            <input type="range" id="input-shininess" min="1" max="256" value="32" step="1" aria-label="Specular shininess exponent">
+          </div>
+        </div>
+
+        <!-- Conditional Sliders based on active shading model -->
+        <div id="row-roughness" class="control-row conditional-row hidden">
+          <div class="control-label">
+            <span>Roughness σ (Oren-Nayar)</span>
+            <span id="val-roughness" class="val-pill">0.50</span>
+          </div>
+          <input type="range" id="input-roughness" min="0" max="1" value="0.5" step="0.05" aria-label="Microfacet roughness">
+        </div>
+
+        <div id="row-toon" class="control-row conditional-row hidden">
+          <div class="control-label">
+            <span>Toon Bands (Steps)</span>
+            <span id="val-toon-bands" class="val-pill">4</span>
+          </div>
+          <input type="range" id="input-toon-bands" min="2" max="8" value="4" step="1" aria-label="Toon diffuse quantization bands">
+        </div>
+
+        <div id="row-bump" class="control-row conditional-row hidden">
+          <div class="control-label">
+            <span>Procedural Bump Depth</span>
+            <span id="val-bump" class="val-pill">0.30</span>
+          </div>
+          <input type="range" id="input-bump" min="0" max="2" value="0.3" step="0.05" aria-label="Bump depth strength">
+        </div>
+      </section>
+
+      <!-- Section 4: Shader Mathematics & Principles -->
+      <section class="control-section math-section" aria-labelledby="heading-math">
+        <div class="section-header">
+          <span class="section-icon">📐</span>
+          <h2 id="heading-math" class="section-title">Shader Formulation</h2>
+          <span id="shader-stage-badge" class="stage-badge">FRAGMENT</span>
+        </div>
+        <div id="info-panel">
+          <h3 id="info-title">Phong Shading</h3>
+          <p id="info-desc">Per-fragment lighting with smooth specular highlights.</p>
+          <div id="info-formula"></div>
+        </div>
+      </section>
+
+      <!-- Hidden container for fallback compatibility -->
+      <div id="gui-container" style="display:none"></div>
     </aside>
   </main>
 
-  <!-- Status bar -->
+  <!-- STUDIO STATUS & TELEMETRY FOOTER -->
   <footer id="status-bar" role="status" aria-live="polite">
-    <span id="status-model">Model: Sphere</span>
-    <span id="status-shader">Shader: Phong</span>
-    <span id="status-hint" aria-hidden="true">R = Reset Camera | A = Auto-orbit | L = Toggle Light | 1-7 = Shaders</span>
+    <div class="status-left">
+      <span class="status-indicator"></span>
+      <span id="status-model">Mesh: Sphere</span>
+      <span class="status-sep">/</span>
+      <span id="status-shader">Shader: Phong</span>
+    </div>
+    <div id="status-hint" class="status-right" aria-hidden="true">
+      <span class="key-tag"><kbd>1</kbd>–<kbd>7</kbd> Shaders</span>
+      <span class="key-tag"><kbd>R</kbd> Reset Cam</span>
+      <span class="key-tag"><kbd>L</kbd> Light</span>
+      <span class="key-tag"><kbd>A</kbd> Auto-Orbit</span>
+      <span class="key-tag"><kbd>Alt</kbd>+Drag Rotate Light</span>
+    </div>
   </footer>
 
   <script src="bundle.js"></script>
