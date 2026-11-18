@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="Interactive 3D Model Graphics Shading Viewer with 360-degree controllable lighting and real-time custom GLSL shaders.">
+  <title>3D Shading Viewer | Real-time WebGL Shading Models</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a href="#viewport-container" class="skip-link visually-hidden">Skip to 3D canvas</a>
+
+  <!-- HEADER with title and shading mode tabs -->
+  <header id="header">
+    <h1>🔆 3D Shading Viewer</h1>
+    <nav id="shader-tabs" role="tablist" aria-label="Shading Models">
+      <button class="shader-tab" role="tab" aria-selected="false" data-shader="flat">Flat</button>
+      <button class="shader-tab" role="tab" aria-selected="false" data-shader="gouraud">Gouraud</button>
+      <button class="shader-tab active" role="tab" aria-selected="true" data-shader="phong">Phong</button>
+      <button class="shader-tab" role="tab" aria-selected="false" data-shader="blinnphong">Blinn-Phong</button>
+      <button class="shader-tab" role="tab" aria-selected="false" data-shader="toon">Toon</button>
+      <button class="shader-tab" role="tab" aria-selected="false" data-shader="normalmap">Normal Map</button>
+      <button class="shader-tab" role="tab" aria-selected="false" data-shader="orennayar">Oren-Nayar</button>
+    </nav>
+    <div id="fps-counter" aria-label="Frames per second">-- fps</div>
+  </header>
+
+  <main id="main-layout">
+    <!-- LEFT: Canvas viewport -->
+    <div id="viewport-container" tabindex="-1">
+      <canvas id="viewport" aria-label="Interactive 3D scene preview"></canvas>
+
+      <!-- Loading overlay -->
+      <div id="loading-overlay" class="hidden" role="status" aria-live="polite">
+        <div class="spinner" aria-hidden="true"></div>
+        <p>Loading 3D model…</p>
+      </div>
+
+      <!-- Native Error Dialog (Modern Dialog API) -->
+      <dialog id="error-dialog" aria-labelledby="error-title">
+        <h3 id="error-title">Failed to Load Model</h3>
+        <p id="error-msg">An error occurred while loading the 3D model.</p>
+        <form method="dialog">
+          <button id="error-dismiss" autofocus>Dismiss</button>
+        </form>
+      </dialog>
+
+      <!-- Light drag hint -->
+      <div id="light-hint" aria-hidden="true">Alt + Drag → Move Light 360°</div>
+    </div>
+
+    <!-- RIGHT: Control panel -->
+    <aside id="control-panel" aria-label="Controls and Parameters">
+      <!-- lil-gui mounts here -->
+      <div id="gui-container"></div>
+
+      <!-- Info panel (shader description) -->
+      <section id="info-panel" aria-label="Shader Details">
+        <h3 id="info-title">Phong Shading</h3>
+        <p id="info-desc">Per-fragment lighting with smooth specular highlights.</p>
+        <div id="info-formula"></div>
+      </section>
+
+      <!-- Hidden file input for upload -->
+      <input type="file" id="file-upload" accept=".obj,.gltf,.glb,.stl" style="display:none" aria-label="Upload custom 3D model">
+    </aside>
+  </main>
+
+  <!-- Status bar -->
+  <footer id="status-bar" role="status" aria-live="polite">
+    <span id="status-model">Model: Sphere</span>
+    <span id="status-shader">Shader: Phong</span>
+    <span id="status-hint" aria-hidden="true">R = Reset Camera | A = Auto-orbit | L = Toggle Light | 1-7 = Shaders</span>
+  </footer>
+
+  <script src="bundle.js"></script>
+</body>
+</html>

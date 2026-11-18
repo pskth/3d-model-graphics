@@ -1,0 +1,29 @@
+{
+  "name": "3d-model-graphics",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "build": "esbuild main.js --bundle --outfile=bundle.js --format=iife --target=es2020",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pskth/3d-model-graphics.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/pskth/3d-model-graphics/issues"
+  },
+  "homepage": "https://github.com/pskth/3d-model-graphics#readme",
+  "dependencies": {
+    "lil-gui": "^0.21.0",
+    "three": "^0.187.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  }
+}
