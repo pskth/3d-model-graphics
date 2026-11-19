@@ -410,35 +410,35 @@
   function floorPowerOfTwo(value) {
     return Math.pow(2, Math.floor(Math.log(value) / Math.LN2));
   }
-  function setQuaternionFromProperEuler(q, a, b, c, order) {
+  function setQuaternionFromProperEuler(q, a, b, c2, order) {
     const cos = Math.cos;
     const sin = Math.sin;
-    const c2 = cos(b / 2);
+    const c22 = cos(b / 2);
     const s2 = sin(b / 2);
-    const c13 = cos((a + c) / 2);
-    const s13 = sin((a + c) / 2);
-    const c1_3 = cos((a - c) / 2);
-    const s1_3 = sin((a - c) / 2);
-    const c3_1 = cos((c - a) / 2);
-    const s3_1 = sin((c - a) / 2);
+    const c13 = cos((a + c2) / 2);
+    const s13 = sin((a + c2) / 2);
+    const c1_3 = cos((a - c2) / 2);
+    const s1_3 = sin((a - c2) / 2);
+    const c3_1 = cos((c2 - a) / 2);
+    const s3_1 = sin((c2 - a) / 2);
     switch (order) {
       case "XYX":
-        q.set(c2 * s13, s2 * c1_3, s2 * s1_3, c2 * c13);
+        q.set(c22 * s13, s2 * c1_3, s2 * s1_3, c22 * c13);
         break;
       case "YZY":
-        q.set(s2 * s1_3, c2 * s13, s2 * c1_3, c2 * c13);
+        q.set(s2 * s1_3, c22 * s13, s2 * c1_3, c22 * c13);
         break;
       case "ZXZ":
-        q.set(s2 * c1_3, s2 * s1_3, c2 * s13, c2 * c13);
+        q.set(s2 * c1_3, s2 * s1_3, c22 * s13, c22 * c13);
         break;
       case "XZX":
-        q.set(c2 * s13, s2 * s3_1, s2 * c3_1, c2 * c13);
+        q.set(c22 * s13, s2 * s3_1, s2 * c3_1, c22 * c13);
         break;
       case "YXY":
-        q.set(s2 * c3_1, c2 * s13, s2 * s3_1, c2 * c13);
+        q.set(s2 * c3_1, c22 * s13, s2 * s3_1, c22 * c13);
         break;
       case "ZYZ":
-        q.set(s2 * s3_1, s2 * c3_1, c2 * s13, c2 * c13);
+        q.set(s2 * s3_1, s2 * c3_1, c22 * s13, c22 * c13);
         break;
       default:
         warn("MathUtils: .setQuaternionFromProperEuler() encountered an unknown order: " + order);
@@ -1303,11 +1303,11 @@
      * @return {Vector2} A reference to this vector.
      */
     rotateAround(center, angle) {
-      const c = Math.cos(angle), s = Math.sin(angle);
+      const c2 = Math.cos(angle), s = Math.sin(angle);
       const x = this.x - center.x;
       const y = this.y - center.y;
-      this.x = x * c - y * s + center.x;
-      this.y = x * s + y * c + center.y;
+      this.x = x * c2 - y * s + center.x;
+      this.y = x * s + y * c2 + center.y;
       return this;
     }
     /**
@@ -2674,8 +2674,8 @@
      * @param {Cylindrical} c - The cylindrical coordinates.
      * @return {Vector3} A reference to this vector.
      */
-    setFromCylindrical(c) {
-      return this.setFromCylindricalCoords(c.radius, c.theta, c.y);
+    setFromCylindrical(c2) {
+      return this.setFromCylindricalCoords(c2.radius, c2.theta, c2.y);
     }
     /**
      * Sets the vector components from the given cylindrical coordinates.
@@ -2760,10 +2760,10 @@
      * @param {Color} c - The color to set.
      * @return {Vector3} A reference to this vector.
      */
-    setFromColor(c) {
-      this.x = c.r;
-      this.y = c.g;
-      this.z = c.b;
+    setFromColor(c2) {
+      this.x = c2.r;
+      this.y = c2.g;
+      this.z = c2.b;
       return this;
     }
     /**
@@ -2836,10 +2836,10 @@
     randomDirection() {
       const theta = Math.random() * Math.PI * 2;
       const u = Math.random() * 2 - 1;
-      const c = Math.sqrt(1 - u * u);
-      this.x = c * Math.cos(theta);
+      const c2 = Math.sqrt(1 - u * u);
+      this.x = c2 * Math.cos(theta);
       this.y = u;
-      this.z = c * Math.sin(theta);
+      this.z = c2 * Math.sin(theta);
       return this;
     }
     *[Symbol.iterator]() {
@@ -3059,8 +3059,8 @@
      */
     determinant() {
       const te = this.elements;
-      const a = te[0], b = te[1], c = te[2], d = te[3], e = te[4], f = te[5], g = te[6], h = te[7], i = te[8];
-      return a * e * i - a * f * h - b * d * i + b * f * g + c * d * h - c * e * g;
+      const a = te[0], b = te[1], c2 = te[2], d = te[3], e = te[4], f = te[5], g = te[6], h = te[7], i = te[8];
+      return a * e * i - a * f * h - b * d * i + b * f * g + c2 * d * h - c2 * e * g;
     }
     /**
      * Inverts this matrix, using the [analytic method](https://en.wikipedia.org/wiki/Invertible_matrix#Analytic_solution).
@@ -3145,15 +3145,15 @@
      * @return {Matrix3} A reference to this matrix.
      */
     setUvTransform(tx, ty, sx, sy, rotation, cx, cy) {
-      const c = Math.cos(rotation);
+      const c2 = Math.cos(rotation);
       const s = Math.sin(rotation);
       this.set(
-        sx * c,
+        sx * c2,
         sx * s,
-        -sx * (c * cx + s * cy) + cx + tx,
+        -sx * (c2 * cx + s * cy) + cx + tx,
         -sy * s,
-        sy * c,
-        -sy * (-s * cx + c * cy) + cy + ty,
+        sy * c2,
+        -sy * (-s * cx + c2 * cy) + cy + ty,
         0,
         0,
         1
@@ -3241,14 +3241,14 @@
      * @return {Matrix3} A reference to this matrix.
      */
     makeRotation(theta) {
-      const c = Math.cos(theta);
+      const c2 = Math.cos(theta);
       const s = Math.sin(theta);
       this.set(
-        c,
+        c2,
         -s,
         0,
         s,
-        c,
+        c2,
         0,
         0,
         0,
@@ -3462,11 +3462,11 @@
     return ColorManagement2;
   }
   var ColorManagement = /* @__PURE__ */ createColorManagement();
-  function SRGBToLinear(c) {
-    return c < 0.04045 ? c * 0.0773993808 : Math.pow(c * 0.9478672986 + 0.0521327014, 2.4);
+  function SRGBToLinear(c2) {
+    return c2 < 0.04045 ? c2 * 0.0773993808 : Math.pow(c2 * 0.9478672986 + 0.0521327014, 2.4);
   }
-  function LinearToSRGB(c) {
-    return c < 31308e-7 ? c * 12.92 : 1.055 * Math.pow(c, 0.41666) - 0.055;
+  function LinearToSRGB(c2) {
+    return c2 < 31308e-7 ? c2 * 12.92 : 1.055 * Math.pow(c2, 0.41666) - 0.055;
   }
   var _canvas;
   var ImageUtils = class {
@@ -5320,21 +5320,21 @@
       const te = this.elements;
       const x = euler.x, y = euler.y, z = euler.z;
       const a = Math.cos(x), b = Math.sin(x);
-      const c = Math.cos(y), d = Math.sin(y);
+      const c2 = Math.cos(y), d = Math.sin(y);
       const e = Math.cos(z), f = Math.sin(z);
       if (euler.order === "XYZ") {
         const ae = a * e, af = a * f, be = b * e, bf = b * f;
-        te[0] = c * e;
-        te[4] = -c * f;
+        te[0] = c2 * e;
+        te[4] = -c2 * f;
         te[8] = d;
         te[1] = af + be * d;
         te[5] = ae - bf * d;
-        te[9] = -b * c;
+        te[9] = -b * c2;
         te[2] = bf - ae * d;
         te[6] = be + af * d;
-        te[10] = a * c;
+        te[10] = a * c2;
       } else if (euler.order === "YXZ") {
-        const ce = c * e, cf = c * f, de = d * e, df = d * f;
+        const ce = c2 * e, cf = c2 * f, de = d * e, df = d * f;
         te[0] = ce + df * b;
         te[4] = de * b - cf;
         te[8] = a * d;
@@ -5343,9 +5343,9 @@
         te[9] = -b;
         te[2] = cf * b - de;
         te[6] = df + ce * b;
-        te[10] = a * c;
+        te[10] = a * c2;
       } else if (euler.order === "ZXY") {
-        const ce = c * e, cf = c * f, de = d * e, df = d * f;
+        const ce = c2 * e, cf = c2 * f, de = d * e, df = d * f;
         te[0] = ce - df * b;
         te[4] = -a * f;
         te[8] = de + cf * b;
@@ -5354,21 +5354,21 @@
         te[9] = df - ce * b;
         te[2] = -a * d;
         te[6] = b;
-        te[10] = a * c;
+        te[10] = a * c2;
       } else if (euler.order === "ZYX") {
         const ae = a * e, af = a * f, be = b * e, bf = b * f;
-        te[0] = c * e;
+        te[0] = c2 * e;
         te[4] = be * d - af;
         te[8] = ae * d + bf;
-        te[1] = c * f;
+        te[1] = c2 * f;
         te[5] = bf * d + ae;
         te[9] = af * d - be;
         te[2] = -d;
-        te[6] = b * c;
-        te[10] = a * c;
+        te[6] = b * c2;
+        te[10] = a * c2;
       } else if (euler.order === "YZX") {
-        const ac = a * c, ad = a * d, bc = b * c, bd = b * d;
-        te[0] = c * e;
+        const ac = a * c2, ad = a * d, bc = b * c2, bd = b * d;
+        te[0] = c2 * e;
         te[4] = bd - ac * f;
         te[8] = bc * f + ad;
         te[1] = f;
@@ -5378,8 +5378,8 @@
         te[6] = ad * f + bc;
         te[10] = ac - bd * f;
       } else if (euler.order === "XZY") {
-        const ac = a * c, ad = a * d, bc = b * c, bd = b * d;
-        te[0] = c * e;
+        const ac = a * c2, ad = a * d, bc = b * c2, bd = b * d;
+        te[0] = c2 * e;
         te[4] = -f;
         te[8] = d * e;
         te[1] = ac * f + bd;
@@ -5740,19 +5740,19 @@
      * @return {Matrix4} A reference to this matrix.
      */
     makeRotationX(theta) {
-      const c = Math.cos(theta), s = Math.sin(theta);
+      const c2 = Math.cos(theta), s = Math.sin(theta);
       this.set(
         1,
         0,
         0,
         0,
         0,
-        c,
+        c2,
         -s,
         0,
         0,
         s,
-        c,
+        c2,
         0,
         0,
         0,
@@ -5769,9 +5769,9 @@
      * @return {Matrix4} A reference to this matrix.
      */
     makeRotationY(theta) {
-      const c = Math.cos(theta), s = Math.sin(theta);
+      const c2 = Math.cos(theta), s = Math.sin(theta);
       this.set(
-        c,
+        c2,
         0,
         s,
         0,
@@ -5781,7 +5781,7 @@
         0,
         -s,
         0,
-        c,
+        c2,
         0,
         0,
         0,
@@ -5798,14 +5798,14 @@
      * @return {Matrix4} A reference to this matrix.
      */
     makeRotationZ(theta) {
-      const c = Math.cos(theta), s = Math.sin(theta);
+      const c2 = Math.cos(theta), s = Math.sin(theta);
       this.set(
-        c,
+        c2,
         -s,
         0,
         0,
         s,
-        c,
+        c2,
         0,
         0,
         0,
@@ -5828,23 +5828,23 @@
      * @return {Matrix4} A reference to this matrix.
      */
     makeRotationAxis(axis, angle) {
-      const c = Math.cos(angle);
+      const c2 = Math.cos(angle);
       const s = Math.sin(angle);
-      const t = 1 - c;
+      const t = 1 - c2;
       const x = axis.x, y = axis.y, z = axis.z;
       const tx = t * x, ty = t * y;
       this.set(
-        tx * x + c,
+        tx * x + c2,
         tx * y - s * z,
         tx * z + s * y,
         0,
         tx * y + s * z,
-        ty * y + c,
+        ty * y + c2,
         ty * z - s * x,
         0,
         tx * z - s * y,
         ty * z + s * x,
-        t * z * z + c,
+        t * z * z + c2,
         0,
         0,
         0,
@@ -6016,16 +6016,16 @@
       const y = 2 * near / (top - bottom);
       const a = (right + left) / (right - left);
       const b = (top + bottom) / (top - bottom);
-      let c, d;
+      let c2, d;
       if (reversedDepth) {
-        c = near / (far - near);
+        c2 = near / (far - near);
         d = far * near / (far - near);
       } else {
         if (coordinateSystem === WebGLCoordinateSystem) {
-          c = -(far + near) / (far - near);
+          c2 = -(far + near) / (far - near);
           d = -2 * far * near / (far - near);
         } else if (coordinateSystem === WebGPUCoordinateSystem) {
-          c = -far / (far - near);
+          c2 = -far / (far - near);
           d = -far * near / (far - near);
         } else {
           throw new Error("THREE.Matrix4.makePerspective(): Invalid coordinate system: " + coordinateSystem);
@@ -6041,7 +6041,7 @@
       te[13] = 0;
       te[2] = 0;
       te[6] = 0;
-      te[10] = c;
+      te[10] = c2;
       te[14] = d;
       te[3] = 0;
       te[7] = 0;
@@ -6069,16 +6069,16 @@
       const y = 2 / (top - bottom);
       const a = -(right + left) / (right - left);
       const b = -(top + bottom) / (top - bottom);
-      let c, d;
+      let c2, d;
       if (reversedDepth) {
-        c = 1 / (far - near);
+        c2 = 1 / (far - near);
         d = far / (far - near);
       } else {
         if (coordinateSystem === WebGLCoordinateSystem) {
-          c = -2 / (far - near);
+          c2 = -2 / (far - near);
           d = -(far + near) / (far - near);
         } else if (coordinateSystem === WebGPUCoordinateSystem) {
-          c = -1 / (far - near);
+          c2 = -1 / (far - near);
           d = -near / (far - near);
         } else {
           throw new Error("THREE.Matrix4.makeOrthographic(): Invalid coordinate system: " + coordinateSystem);
@@ -6094,7 +6094,7 @@
       te[13] = b;
       te[2] = 0;
       te[6] = 0;
-      te[10] = c;
+      te[10] = c2;
       te[14] = d;
       te[3] = 0;
       te[7] = 0;
@@ -8440,8 +8440,8 @@
      * @param {Color} c - The color to test for equality.
      * @return {boolean} Whether this bounding color is equal with the given one.
      */
-    equals(c) {
-      return c.r === this.r && c.g === this.g && c.b === this.b;
+    equals(c2) {
+      return c2.r === this.r && c2.g === this.g && c2.b === this.b;
     }
     /**
      * Sets this color's RGB components from the given array.
@@ -8567,10 +8567,10 @@
      * @param {Vector3} [b=(0,0,0)] - The second corner of the triangle.
      * @param {Vector3} [c=(0,0,0)] - The third corner of the triangle.
      */
-    constructor(a = new Vector3(), b = new Vector3(), c = new Vector3()) {
+    constructor(a = new Vector3(), b = new Vector3(), c2 = new Vector3()) {
       this.a = a;
       this.b = b;
-      this.c = c;
+      this.c = c2;
     }
     /**
      * Computes the normal vector of a triangle.
@@ -8581,8 +8581,8 @@
      * @param {Vector3} target - The target vector that is used to store the method's result.
      * @return {Vector3} The triangle's normal.
      */
-    static getNormal(a, b, c, target) {
-      target.subVectors(c, b);
+    static getNormal(a, b, c2, target) {
+      target.subVectors(c2, b);
       _v0$2.subVectors(a, b);
       target.cross(_v0$2);
       const targetLengthSq = target.lengthSq();
@@ -8602,8 +8602,8 @@
      * @param {Vector3} target - The target vector that is used to store the method's result.
      * @return {?Vector3} The barycentric coordinates for the given point
      */
-    static getBarycoord(point, a, b, c, target) {
-      _v0$2.subVectors(c, a);
+    static getBarycoord(point, a, b, c2, target) {
+      _v0$2.subVectors(c2, a);
       _v1$5.subVectors(b, a);
       _v2$4.subVectors(point, a);
       const dot00 = _v0$2.dot(_v0$2);
@@ -8632,8 +8632,8 @@
      * @return {boolean} Whether the given point, when projected onto the plane of the
      * triangle, lies within the triangle or not.
      */
-    static containsPoint(point, a, b, c) {
-      if (this.getBarycoord(point, a, b, c, _v3$2) === null) {
+    static containsPoint(point, a, b, c2) {
+      if (this.getBarycoord(point, a, b, c2, _v3$2) === null) {
         return false;
       }
       return _v3$2.x >= 0 && _v3$2.y >= 0 && _v3$2.x + _v3$2.y <= 1;
@@ -8699,8 +8699,8 @@
      * @param {Vector3} direction - The (normalized) direction vector.
      * @return {boolean} Whether the triangle is oriented towards the given direction or not.
      */
-    static isFrontFacing(a, b, c, direction) {
-      _v0$2.subVectors(c, b);
+    static isFrontFacing(a, b, c2, direction) {
+      _v0$2.subVectors(c2, b);
       _v1$5.subVectors(a, b);
       return _v0$2.cross(_v1$5).dot(direction) < 0;
     }
@@ -8712,10 +8712,10 @@
      * @param {Vector3} c - The third corner of the triangle.
      * @return {Triangle} A reference to this triangle.
      */
-    set(a, b, c) {
+    set(a, b, c2) {
       this.a.copy(a);
       this.b.copy(b);
-      this.c.copy(c);
+      this.c.copy(c2);
       return this;
     }
     /**
@@ -8867,10 +8867,10 @@
      * @return {Vector3} The closest point on the triangle.
      */
     closestPointToPoint(p, target) {
-      const a = this.a, b = this.b, c = this.c;
+      const a = this.a, b = this.b, c2 = this.c;
       let v, w;
       _vab.subVectors(b, a);
-      _vac.subVectors(c, a);
+      _vac.subVectors(c2, a);
       _vap.subVectors(p, a);
       const d1 = _vab.dot(_vap);
       const d2 = _vac.dot(_vap);
@@ -8888,11 +8888,11 @@
         v = d1 / (d1 - d3);
         return target.copy(a).addScaledVector(_vab, v);
       }
-      _vcp.subVectors(p, c);
+      _vcp.subVectors(p, c2);
       const d5 = _vab.dot(_vcp);
       const d6 = _vac.dot(_vcp);
       if (d6 >= 0 && d5 <= d6) {
-        return target.copy(c);
+        return target.copy(c2);
       }
       const vb = d5 * d2 - d1 * d6;
       if (vb <= 0 && d2 >= 0 && d6 <= 0) {
@@ -8901,7 +8901,7 @@
       }
       const va = d3 * d6 - d5 * d4;
       if (va <= 0 && d4 - d3 >= 0 && d5 - d6 >= 0) {
-        _vbc.subVectors(c, b);
+        _vbc.subVectors(c2, b);
         w = (d4 - d3) / (d4 - d3 + (d5 - d6));
         return target.copy(b).addScaledVector(_vbc, w);
       }
@@ -10656,14 +10656,14 @@
         tan2[i] = new Vector3();
       }
       const vA = new Vector3(), vB = new Vector3(), vC = new Vector3(), uvA = new Vector2(), uvB = new Vector2(), uvC = new Vector2(), sdir = new Vector3(), tdir = new Vector3();
-      function handleTriangle(a, b, c) {
-        used[a] = used[b] = used[c] = 1;
+      function handleTriangle(a, b, c2) {
+        used[a] = used[b] = used[c2] = 1;
         vA.fromBufferAttribute(positionAttribute, a);
         vB.fromBufferAttribute(positionAttribute, b);
-        vC.fromBufferAttribute(positionAttribute, c);
+        vC.fromBufferAttribute(positionAttribute, c2);
         uvA.fromBufferAttribute(uvAttribute, a);
         uvB.fromBufferAttribute(uvAttribute, b);
-        uvC.fromBufferAttribute(uvAttribute, c);
+        uvC.fromBufferAttribute(uvAttribute, c2);
         vB.sub(vA);
         vC.sub(vA);
         uvB.sub(uvA);
@@ -10674,10 +10674,10 @@
         tdir.copy(vC).multiplyScalar(uvB.x).addScaledVector(vB, -uvC.x).multiplyScalar(r);
         tan1[a].add(sdir);
         tan1[b].add(sdir);
-        tan1[c].add(sdir);
+        tan1[c2].add(sdir);
         tan2[a].add(tdir);
         tan2[b].add(tdir);
-        tan2[c].add(tdir);
+        tan2[c2].add(tdir);
       }
       let groups = this.groups;
       if (groups.length === 0) {
@@ -11568,8 +11568,8 @@
      * @param {Vector3} c - The third coplanar point.
      * @return {Plane} A reference to this plane.
      */
-    setFromCoplanarPoints(a, b, c) {
-      const normal = _vector1.subVectors(c, b).cross(_vector2.subVectors(a, b)).normalize();
+    setFromCoplanarPoints(a, b, c2) {
+      const normal = _vector1.subVectors(c2, b).cross(_vector2.subVectors(a, b)).normalize();
       this.setFromNormalAndCoplanarPoint(normal, a);
       return this;
     }
@@ -12478,7 +12478,7 @@
       const a01 = -this.direction.dot(_segDir);
       const b0 = _diff.dot(this.direction);
       const b1 = -_diff.dot(_segDir);
-      const c = _diff.lengthSq();
+      const c2 = _diff.lengthSq();
       const det = Math.abs(1 - a01 * a01);
       let s0, s1, sqrDist, extDet;
       if (det > 0) {
@@ -12491,36 +12491,36 @@
               const invDet = 1 / det;
               s0 *= invDet;
               s1 *= invDet;
-              sqrDist = s0 * (s0 + a01 * s1 + 2 * b0) + s1 * (a01 * s0 + s1 + 2 * b1) + c;
+              sqrDist = s0 * (s0 + a01 * s1 + 2 * b0) + s1 * (a01 * s0 + s1 + 2 * b1) + c2;
             } else {
               s1 = segExtent;
               s0 = Math.max(0, -(a01 * s1 + b0));
-              sqrDist = -s0 * s0 + s1 * (s1 + 2 * b1) + c;
+              sqrDist = -s0 * s0 + s1 * (s1 + 2 * b1) + c2;
             }
           } else {
             s1 = -segExtent;
             s0 = Math.max(0, -(a01 * s1 + b0));
-            sqrDist = -s0 * s0 + s1 * (s1 + 2 * b1) + c;
+            sqrDist = -s0 * s0 + s1 * (s1 + 2 * b1) + c2;
           }
         } else {
           if (s1 <= -extDet) {
             s0 = Math.max(0, -(-a01 * segExtent + b0));
             s1 = s0 > 0 ? -segExtent : Math.min(Math.max(-segExtent, -b1), segExtent);
-            sqrDist = -s0 * s0 + s1 * (s1 + 2 * b1) + c;
+            sqrDist = -s0 * s0 + s1 * (s1 + 2 * b1) + c2;
           } else if (s1 <= extDet) {
             s0 = 0;
             s1 = Math.min(Math.max(-segExtent, -b1), segExtent);
-            sqrDist = s1 * (s1 + 2 * b1) + c;
+            sqrDist = s1 * (s1 + 2 * b1) + c2;
           } else {
             s0 = Math.max(0, -(a01 * segExtent + b0));
             s1 = s0 > 0 ? segExtent : Math.min(Math.max(-segExtent, -b1), segExtent);
-            sqrDist = -s0 * s0 + s1 * (s1 + 2 * b1) + c;
+            sqrDist = -s0 * s0 + s1 * (s1 + 2 * b1) + c2;
           }
         }
       } else {
         s1 = a01 > 0 ? -segExtent : segExtent;
         s0 = Math.max(0, -(a01 * s1 + b0));
-        sqrDist = -s0 * s0 + s1 * (s1 + 2 * b1) + c;
+        sqrDist = -s0 * s0 + s1 * (s1 + 2 * b1) + c2;
       }
       if (optionalPointOnRay) {
         optionalPointOnRay.copy(this.origin).addScaledVector(this.direction, s0);
@@ -12674,7 +12674,7 @@
      * @param {Vector3} target - The target vector that is used to store the method's result.
      * @return {?Vector3} The intersection point.
      */
-    intersectTriangle(a, b, c, backfaceCulling, target) {
+    intersectTriangle(a, b, c2, backfaceCulling, target) {
       const origin = this.origin;
       const direction = this.direction;
       const dx = direction.x;
@@ -12682,7 +12682,7 @@
       const dz = direction.z;
       const aox = a.x - origin.x, aoy = a.y - origin.y, aoz = a.z - origin.z;
       const box = b.x - origin.x, boy = b.y - origin.y, boz = b.z - origin.z;
-      const cox = c.x - origin.x, coy = c.y - origin.y, coz = c.z - origin.z;
+      const cox = c2.x - origin.x, coy = c2.y - origin.y, coz = c2.z - origin.z;
       const adx = Math.abs(dx), ady = Math.abs(dy), adz = Math.abs(dz);
       let dkx, dky, dkz;
       let akx, aky, akz, bkx, bky, bkz, ckx, cky, ckz;
@@ -13018,8 +13018,8 @@
             for (let j = start, jl = end; j < jl; j += 3) {
               const a = index.getX(j);
               const b = index.getX(j + 1);
-              const c = index.getX(j + 2);
-              intersection = checkGeometryIntersection(this, groupMaterial, raycaster, rayLocalSpace, uv, uv1, normal, a, b, c);
+              const c2 = index.getX(j + 2);
+              intersection = checkGeometryIntersection(this, groupMaterial, raycaster, rayLocalSpace, uv, uv1, normal, a, b, c2);
               if (intersection) {
                 intersection.faceIndex = Math.floor(j / 3);
                 intersection.face.materialIndex = group.materialIndex;
@@ -13033,8 +13033,8 @@
           for (let i = start, il = end; i < il; i += 3) {
             const a = index.getX(i);
             const b = index.getX(i + 1);
-            const c = index.getX(i + 2);
-            intersection = checkGeometryIntersection(this, material, raycaster, rayLocalSpace, uv, uv1, normal, a, b, c);
+            const c2 = index.getX(i + 2);
+            intersection = checkGeometryIntersection(this, material, raycaster, rayLocalSpace, uv, uv1, normal, a, b, c2);
             if (intersection) {
               intersection.faceIndex = Math.floor(i / 3);
               intersects.push(intersection);
@@ -13051,8 +13051,8 @@
             for (let j = start, jl = end; j < jl; j += 3) {
               const a = j;
               const b = j + 1;
-              const c = j + 2;
-              intersection = checkGeometryIntersection(this, groupMaterial, raycaster, rayLocalSpace, uv, uv1, normal, a, b, c);
+              const c2 = j + 2;
+              intersection = checkGeometryIntersection(this, groupMaterial, raycaster, rayLocalSpace, uv, uv1, normal, a, b, c2);
               if (intersection) {
                 intersection.faceIndex = Math.floor(j / 3);
                 intersection.face.materialIndex = group.materialIndex;
@@ -13066,8 +13066,8 @@
           for (let i = start, il = end; i < il; i += 3) {
             const a = i;
             const b = i + 1;
-            const c = i + 2;
-            intersection = checkGeometryIntersection(this, material, raycaster, rayLocalSpace, uv, uv1, normal, a, b, c);
+            const c2 = i + 2;
+            intersection = checkGeometryIntersection(this, material, raycaster, rayLocalSpace, uv, uv1, normal, a, b, c2);
             if (intersection) {
               intersection.faceIndex = Math.floor(i / 3);
               intersects.push(intersection);
@@ -13095,22 +13095,22 @@
       object
     };
   }
-  function checkGeometryIntersection(object, material, raycaster, ray, uv, uv1, normal, a, b, c) {
+  function checkGeometryIntersection(object, material, raycaster, ray, uv, uv1, normal, a, b, c2) {
     object.getVertexPosition(a, _vA);
     object.getVertexPosition(b, _vB);
-    object.getVertexPosition(c, _vC);
+    object.getVertexPosition(c2, _vC);
     const intersection = checkIntersection$1(object, material, raycaster, ray, _vA, _vB, _vC, _intersectionPoint);
     if (intersection) {
       const barycoord = new Vector3();
       Triangle.getBarycoord(_intersectionPoint, _vA, _vB, _vC, barycoord);
       if (uv) {
-        intersection.uv = Triangle.getInterpolatedAttribute(uv, a, b, c, barycoord, new Vector2());
+        intersection.uv = Triangle.getInterpolatedAttribute(uv, a, b, c2, barycoord, new Vector2());
       }
       if (uv1) {
-        intersection.uv1 = Triangle.getInterpolatedAttribute(uv1, a, b, c, barycoord, new Vector2());
+        intersection.uv1 = Triangle.getInterpolatedAttribute(uv1, a, b, c2, barycoord, new Vector2());
       }
       if (normal) {
-        intersection.normal = Triangle.getInterpolatedAttribute(normal, a, b, c, barycoord, new Vector3());
+        intersection.normal = Triangle.getInterpolatedAttribute(normal, a, b, c2, barycoord, new Vector3());
         if (intersection.normal.dot(ray.direction) > 0) {
           intersection.normal.multiplyScalar(-1);
         }
@@ -13118,7 +13118,7 @@
       const face = {
         a,
         b,
-        c,
+        c: c2,
         normal: new Vector3(),
         materialIndex: 0
       };
@@ -14720,10 +14720,10 @@
           for (let ix = 0; ix < gridX; ix++) {
             const a = numberOfVertices + ix + gridX1 * iy;
             const b = numberOfVertices + ix + gridX1 * (iy + 1);
-            const c = numberOfVertices + (ix + 1) + gridX1 * (iy + 1);
+            const c2 = numberOfVertices + (ix + 1) + gridX1 * (iy + 1);
             const d = numberOfVertices + (ix + 1) + gridX1 * iy;
             indices.push(a, b, d);
-            indices.push(b, c, d);
+            indices.push(b, c2, d);
             groupCount += 6;
           }
         }
@@ -14824,14 +14824,14 @@
           for (let y = 0; y < heightSegments; y++) {
             const a = indexArray[y][x];
             const b = indexArray[y + 1][x];
-            const c = indexArray[y + 1][x + 1];
+            const c2 = indexArray[y + 1][x + 1];
             const d = indexArray[y][x + 1];
             if (radiusTop > 0 || y !== 0) {
               indices.push(a, b, d);
               groupCount += 3;
             }
             if (radiusBottom > 0 || y !== heightSegments - 1) {
-              indices.push(b, c, d);
+              indices.push(b, c2, d);
               groupCount += 3;
             }
           }
@@ -14869,12 +14869,12 @@
           index++;
         }
         for (let x = 0; x < radialSegments; x++) {
-          const c = centerIndexStart + x;
+          const c2 = centerIndexStart + x;
           const i = centerIndexEnd + x;
           if (top === true) {
-            indices.push(i, i + 1, c);
+            indices.push(i, i + 1, c2);
           } else {
-            indices.push(i + 1, i, c);
+            indices.push(i + 1, i, c2);
           }
           groupCount += 3;
         }
@@ -14969,21 +14969,21 @@
       function subdivide(detail2) {
         const a = new Vector3();
         const b = new Vector3();
-        const c = new Vector3();
+        const c2 = new Vector3();
         for (let i = 0; i < indices.length; i += 3) {
           getVertexByIndex(indices[i + 0], a);
           getVertexByIndex(indices[i + 1], b);
-          getVertexByIndex(indices[i + 2], c);
-          subdivideFace(a, b, c, detail2);
+          getVertexByIndex(indices[i + 2], c2);
+          subdivideFace(a, b, c2, detail2);
         }
       }
-      function subdivideFace(a, b, c, detail2) {
+      function subdivideFace(a, b, c2, detail2) {
         const cols = detail2 + 1;
         const v = [];
         for (let i = 0; i <= cols; i++) {
           v[i] = [];
-          const aj = a.clone().lerp(c, i / cols);
-          const bj = b.clone().lerp(c, i / cols);
+          const aj = a.clone().lerp(c2, i / cols);
+          const bj = b.clone().lerp(c2, i / cols);
           const rows = cols - i;
           for (let j = 0; j <= rows; j++) {
             if (j === 0 && i === cols) {
@@ -15059,7 +15059,7 @@
       function correctUVs() {
         const a = new Vector3();
         const b = new Vector3();
-        const c = new Vector3();
+        const c2 = new Vector3();
         const centroid = new Vector3();
         const uvA = new Vector2();
         const uvB = new Vector2();
@@ -15067,15 +15067,15 @@
         for (let i = 0, j = 0; i < vertexBuffer.length; i += 9, j += 6) {
           a.set(vertexBuffer[i + 0], vertexBuffer[i + 1], vertexBuffer[i + 2]);
           b.set(vertexBuffer[i + 3], vertexBuffer[i + 4], vertexBuffer[i + 5]);
-          c.set(vertexBuffer[i + 6], vertexBuffer[i + 7], vertexBuffer[i + 8]);
+          c2.set(vertexBuffer[i + 6], vertexBuffer[i + 7], vertexBuffer[i + 8]);
           uvA.set(uvBuffer[j + 0], uvBuffer[j + 1]);
           uvB.set(uvBuffer[j + 2], uvBuffer[j + 3]);
           uvC.set(uvBuffer[j + 4], uvBuffer[j + 5]);
-          centroid.copy(a).add(b).add(c).divideScalar(3);
+          centroid.copy(a).add(b).add(c2).divideScalar(3);
           const azi = azimuth(centroid);
           correctUV(uvA, j + 0, a, azi);
           correctUV(uvB, j + 2, b, azi);
-          correctUV(uvC, j + 4, c, azi);
+          correctUV(uvC, j + 4, c2, azi);
         }
       }
       function correctUV(uv, stride, vector, azimuth2) {
@@ -15280,10 +15280,10 @@
         for (let ix = 0; ix < gridX; ix++) {
           const a = ix + gridX1 * iy;
           const b = ix + gridX1 * (iy + 1);
-          const c = ix + 1 + gridX1 * (iy + 1);
+          const c2 = ix + 1 + gridX1 * (iy + 1);
           const d = ix + 1 + gridX1 * iy;
           indices.push(a, b, d);
-          indices.push(b, c, d);
+          indices.push(b, c2, d);
         }
       }
       this.setIndex(indices);
@@ -15372,10 +15372,10 @@
         for (let ix = 0; ix < widthSegments; ix++) {
           const a = grid[iy][ix + 1];
           const b = grid[iy][ix];
-          const c = grid[iy + 1][ix];
+          const c2 = grid[iy + 1][ix];
           const d = grid[iy + 1][ix + 1];
           if (iy !== 0 || thetaStart > 0) indices.push(a, b, d);
-          if (iy !== heightSegments - 1 || thetaEnd < Math.PI) indices.push(b, c, d);
+          if (iy !== heightSegments - 1 || thetaEnd < Math.PI) indices.push(b, c2, d);
         }
       }
       this.setIndex(indices);
@@ -15462,10 +15462,10 @@
         for (let i = 1; i <= radialSegments; i++) {
           const a = (radialSegments + 1) * (j - 1) + (i - 1);
           const b = (radialSegments + 1) * j + (i - 1);
-          const c = (radialSegments + 1) * j + i;
+          const c2 = (radialSegments + 1) * j + i;
           const d = (radialSegments + 1) * (j - 1) + i;
           indices.push(a, b, d);
-          indices.push(b, c, d);
+          indices.push(b, c2, d);
         }
       }
       this.setIndex(indices);
@@ -22429,12 +22429,12 @@
         for (let i = 0, j = 0; i < count; i += 3) {
           const a = array[i + 0];
           const b = array[i + 1];
-          const c = array[i + 2];
+          const c2 = array[i + 2];
           indices[j++] = a;
           indices[j++] = b;
           indices[j++] = b;
-          indices[j++] = c;
-          indices[j++] = c;
+          indices[j++] = c2;
+          indices[j++] = c2;
           indices[j++] = a;
         }
       } else {
@@ -22442,12 +22442,12 @@
         for (let i = 0, j = 0; i < count; i += 3) {
           const a = i + 0;
           const b = i + 1;
-          const c = i + 2;
+          const c2 = i + 2;
           indices[j++] = a;
           indices[j++] = b;
           indices[j++] = b;
-          indices[j++] = c;
-          indices[j++] = c;
+          indices[j++] = c2;
+          indices[j++] = c2;
           indices[j++] = a;
         }
       }
@@ -33712,13 +33712,13 @@ void main() {
         if (lid || (surf < 20 || surf >= 28)) {
           for (let i = 0; i < 3; i++) {
             for (let r = 0; r < 4; r++) {
-              for (let c = 0; c < 4; c++) {
-                g[c * 4 + r] = teapotVertices[teapotPatches[surf * 16 + r * 4 + c] * 3 + i];
+              for (let c2 = 0; c2 < 4; c2++) {
+                g[c2 * 4 + r] = teapotVertices[teapotPatches[surf * 16 + r * 4 + c2] * 3 + i];
                 if (fitLid && (surf >= 20 && surf < 28) && i !== 2) {
-                  g[c * 4 + r] *= 1.077;
+                  g[c2 * 4 + r] *= 1.077;
                 }
                 if (!blinn && i === 2) {
-                  g[c * 4 + r] *= blinnScale;
+                  g[c2 * 4 + r] *= blinnScale;
                 }
               }
             }
@@ -33937,12 +33937,12 @@ void main() {
         const index = parseInt(value, 10);
         return (index >= 0 ? index - 1 : index + len / 2) * 2;
       },
-      addVertex: function(a, b, c) {
+      addVertex: function(a, b, c2) {
         const src = this.vertices;
         const dst = this.object.geometry.vertices;
         dst.push(src[a + 0], src[a + 1], src[a + 2]);
         dst.push(src[b + 0], src[b + 1], src[b + 2]);
-        dst.push(src[c + 0], src[c + 1], src[c + 2]);
+        dst.push(src[c2 + 0], src[c2 + 1], src[c2 + 2]);
       },
       addVertexPoint: function(a) {
         const src = this.vertices;
@@ -33954,19 +33954,19 @@ void main() {
         const dst = this.object.geometry.vertices;
         dst.push(src[a + 0], src[a + 1], src[a + 2]);
       },
-      addNormal: function(a, b, c) {
+      addNormal: function(a, b, c2) {
         const src = this.normals;
         const dst = this.object.geometry.normals;
         dst.push(src[a + 0], src[a + 1], src[a + 2]);
         dst.push(src[b + 0], src[b + 1], src[b + 2]);
-        dst.push(src[c + 0], src[c + 1], src[c + 2]);
+        dst.push(src[c2 + 0], src[c2 + 1], src[c2 + 2]);
       },
-      addFaceNormal: function(a, b, c) {
+      addFaceNormal: function(a, b, c2) {
         const src = this.vertices;
         const dst = this.object.geometry.normals;
         _vA2.fromArray(src, a);
         _vB2.fromArray(src, b);
-        _vC2.fromArray(src, c);
+        _vC2.fromArray(src, c2);
         _cb.subVectors(_vC2, _vB2);
         _ab.subVectors(_vA2, _vB2);
         _cb.cross(_ab);
@@ -33975,19 +33975,19 @@ void main() {
         dst.push(_cb.x, _cb.y, _cb.z);
         dst.push(_cb.x, _cb.y, _cb.z);
       },
-      addColor: function(a, b, c) {
+      addColor: function(a, b, c2) {
         const src = this.colors;
         const dst = this.object.geometry.colors;
         if (src[a] !== void 0) dst.push(src[a + 0], src[a + 1], src[a + 2]);
         if (src[b] !== void 0) dst.push(src[b + 0], src[b + 1], src[b + 2]);
-        if (src[c] !== void 0) dst.push(src[c + 0], src[c + 1], src[c + 2]);
+        if (src[c2] !== void 0) dst.push(src[c2 + 0], src[c2 + 1], src[c2 + 2]);
       },
-      addUV: function(a, b, c) {
+      addUV: function(a, b, c2) {
         const src = this.uvs;
         const dst = this.object.geometry.uvs;
         dst.push(src[a + 0], src[a + 1]);
         dst.push(src[b + 0], src[b + 1]);
-        dst.push(src[c + 0], src[c + 1]);
+        dst.push(src[c2 + 0], src[c2 + 1]);
       },
       addDefaultUV: function() {
         const dst = this.object.geometry.uvs;
@@ -34000,11 +34000,11 @@ void main() {
         const dst = this.object.geometry.uvs;
         dst.push(src[a + 0], src[a + 1]);
       },
-      addFace: function(a, b, c, ua, ub, uc, na, nb, nc) {
+      addFace: function(a, b, c2, ua, ub, uc, na, nb, nc) {
         const vLen = this.vertices.length;
         let ia = this.parseVertexIndex(a, vLen);
         let ib = this.parseVertexIndex(b, vLen);
-        let ic = this.parseVertexIndex(c, vLen);
+        let ic = this.parseVertexIndex(c2, vLen);
         this.addVertex(ia, ib, ic);
         this.addColor(ia, ib, ic);
         if (na !== void 0 && na !== "") {
@@ -35439,14 +35439,14 @@ void main() {
         texture.repeat.fromArray(transform.scale);
       }
       if (transform.rotation !== void 0) {
-        const c = Math.cos(texture.rotation);
+        const c2 = Math.cos(texture.rotation);
         const s = Math.sin(texture.rotation);
         texture.matrix.set(
-          texture.repeat.x * c,
+          texture.repeat.x * c2,
           texture.repeat.y * s,
           texture.offset.x,
           -texture.repeat.x * s,
-          texture.repeat.y * c,
+          texture.repeat.y * c2,
           texture.offset.y,
           0,
           0,
@@ -37626,6 +37626,7 @@ void main() {
   };
 
   // main.js
+  var luminaC = null;
   var SHADER_INFO = {
     flat: {
       name: "Flat Shading",
@@ -37742,12 +37743,26 @@ void main() {
   );
   lightGroup.add(lightLine);
   function updateLightFromSpherical() {
-    const az = MathUtils.degToRad(lightParams.azimuth);
-    const el = MathUtils.degToRad(lightParams.elevation);
-    const d = lightParams.distance;
-    const x = d * Math.cos(el) * Math.sin(az);
-    const y = d * Math.sin(el);
-    const z = d * Math.cos(el) * Math.cos(az);
+    let x;
+    let y;
+    let z;
+    if (luminaC) {
+      luminaC.lumina_set_azimuth(lightParams.azimuth);
+      luminaC.lumina_set_elevation(lightParams.elevation);
+      luminaC.lumina_set_distance(lightParams.distance);
+      luminaC.lumina_set_intensity(lightParams.intensity);
+      luminaC.lumina_set_ambient(lightParams.ambientIntensity);
+      x = luminaC.lumina_get_light_x();
+      y = luminaC.lumina_get_light_y();
+      z = luminaC.lumina_get_light_z();
+    } else {
+      const az = MathUtils.degToRad(lightParams.azimuth);
+      const el = MathUtils.degToRad(lightParams.elevation);
+      const d = lightParams.distance;
+      x = d * Math.cos(el) * Math.sin(az);
+      y = d * Math.sin(el);
+      z = d * Math.cos(el) * Math.cos(az);
+    }
     uniforms.lightPosition.value.set(x, y, z);
     lightCore.position.set(x, y, z);
     lightHalo.position.set(x, y, z);
@@ -37755,8 +37770,21 @@ void main() {
     posAttr.setXYZ(0, x, y, z);
     posAttr.setXYZ(1, 0, 0, 0);
     posAttr.needsUpdate = true;
-    const c = new Color(lightParams.color);
-    uniforms.lightColor.value.set(c.r, c.g, c.b);
+    let red;
+    let green;
+    let blue;
+    if (luminaC) {
+      luminaC.lumina_set_hex_color(parseInt(lightParams.color.slice(1), 16), 0);
+      red = luminaC.lumina_get_light_red();
+      green = luminaC.lumina_get_light_green();
+      blue = luminaC.lumina_get_light_blue();
+    } else {
+      const c2 = new Color(lightParams.color);
+      red = c2.r;
+      green = c2.g;
+      blue = c2.b;
+    }
+    uniforms.lightColor.value.set(red, green, blue);
     lightCore.material.color.set(c);
     uniforms.lightIntensity.value = lightParams.intensity;
     uniforms.ambientIntensity.value = lightParams.ambientIntensity;
@@ -38090,8 +38118,13 @@ void main() {
       inputObjColor.addEventListener("input", (e) => {
         const hex = e.target.value;
         if (previewObjColor) previewObjColor.textContent = hex;
-        const c = new Color(hex);
-        uniforms.objectColor.value.set(c.r, c.g, c.b);
+        const rgb = parseInt(hex.slice(1), 16);
+        if (luminaC) luminaC.lumina_set_hex_color(rgb, 1);
+        const c2 = luminaC ? [luminaC.lumina_get_object_red(), luminaC.lumina_get_object_green(), luminaC.lumina_get_object_blue()] : (() => {
+          const fallback = new Color(hex);
+          return [fallback.r, fallback.g, fallback.b];
+        })();
+        uniforms.objectColor.value.set(c2[0], c2[1], c2[2]);
       });
     }
     const bindSlider = (id, valId, callback, formatFn) => {
@@ -38105,24 +38138,31 @@ void main() {
       });
     };
     bindSlider("input-ka", "val-ka", (v) => {
+      if (luminaC) luminaC.lumina_set_float(5, v);
       uniforms.Ka.value = v;
     }, (v) => v.toFixed(2));
     bindSlider("input-kd", "val-kd", (v) => {
+      if (luminaC) luminaC.lumina_set_float(6, v);
       uniforms.Kd.value = v;
     }, (v) => v.toFixed(2));
     bindSlider("input-ks", "val-ks", (v) => {
+      if (luminaC) luminaC.lumina_set_float(7, v);
       uniforms.Ks.value = v;
     }, (v) => v.toFixed(2));
     bindSlider("input-shininess", "val-shininess", (v) => {
+      if (luminaC) luminaC.lumina_set_float(8, v);
       uniforms.shininess.value = v;
     }, (v) => Math.round(v));
     bindSlider("input-roughness", "val-roughness", (v) => {
+      if (luminaC) luminaC.lumina_set_float(9, v);
       uniforms.roughness.value = v;
     }, (v) => v.toFixed(2));
     bindSlider("input-toon-bands", "val-toon-bands", (v) => {
+      if (luminaC) luminaC.lumina_set_float(10, Math.round(v));
       uniforms.toonBands.value = Math.round(v);
     }, (v) => Math.round(v));
     bindSlider("input-bump", "val-bump", (v) => {
+      if (luminaC) luminaC.lumina_set_float(11, v);
       uniforms.bumpStrength.value = v;
     }, (v) => v.toFixed(2));
     const btnReset = document.getElementById("btn-reset-cam");
@@ -38191,10 +38231,22 @@ void main() {
     orbitControls.update();
     renderer.render(scene, camera);
   }
-  bindStudioControls();
-  loadPreset("Sphere");
-  setShader("phong");
-  animate();
+  async function initializeLuminaC() {
+    if (window.LuminaC) {
+      try {
+        luminaC = await window.LuminaC.ready;
+        luminaC.lumina_init();
+      } catch (error2) {
+        luminaC = null;
+      }
+    }
+    bindStudioControls();
+    loadPreset("Sphere");
+    setShader("phong");
+    if (luminaC) updateLightFromSpherical();
+    animate();
+  }
+  initializeLuminaC();
 })();
 /*! Bundled license information:
 

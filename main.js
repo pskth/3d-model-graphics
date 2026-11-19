@@ -6,6 +6,8 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 import { SHADERS, makeUniforms } from './shaders.js';
 
+let luminaC = null;
+
 // ─────────────────────────────────────────────
 //  Shader info descriptions & mathematical specifications
 // ─────────────────────────────────────────────
@@ -155,12 +157,26 @@ const lightLine = new THREE.Line(
 lightGroup.add(lightLine);
 
 function updateLightFromSpherical() {
-  const az = THREE.MathUtils.degToRad(lightParams.azimuth);
-  const el = THREE.MathUtils.degToRad(lightParams.elevation);
-  const d  = lightParams.distance;
-  const x  = d * Math.cos(el) * Math.sin(az);
-  const y  = d * Math.sin(el);
-  const z  = d * Math.cos(el) * Math.cos(az);
+  let x;
+  let y;
+  let z;
+  if (luminaC) {
+    luminaC.lumina_set_azimuth(lightParams.azimuth);
+    luminaC.lumina_set_elevation(lightParams.elevation);
+    luminaC.lumina_set_distance(lightParams.distance);
+    luminaC.lumina_set_intensity(lightParams.intensity);
+    luminaC.lumina_set_ambient(lightParams.ambientIntensity);
+    x = luminaC.lumina_get_light_x();
+    y = luminaC.lumina_get_light_y();
+    z = luminaC.lumina_get_light_z();
+  } else {
+    const az = THREE.MathUtils.degToRad(lightParams.azimuth);
+    const el = THREE.MathUtils.degToRad(lightParams.elevation);
+    const d  = lightParams.distance;
+    x  = d * Math.cos(el) * Math.sin(az);
+    y  = d * Math.sin(el);
+    z  = d * Math.cos(el) * Math.cos(az);
+  }
 
   uniforms.lightPosition.value.set(x, y, z);
   lightCore.position.set(x, y, z);
@@ -172,8 +188,21 @@ function updateLightFromSpherical() {
   posAttr.setXYZ(1, 0, 0, 0);
   posAttr.needsUpdate = true;
 
-  const c = new THREE.Color(lightParams.color);
-  uniforms.lightColor.value.set(c.r, c.g, c.b);
+  let red;
+  let green;
+  let blue;
+  if (luminaC) {
+    luminaC.lumina_set_hex_color(parseInt(lightParams.color.slice(1), 16), 0);
+    red = luminaC.lumina_get_light_red();
+    green = luminaC.lumina_get_light_green();
+    blue = luminaC.lumina_get_light_blue();
+  } else {
+    const c = new THREE.Color(lightParams.color);
+    red = c.r;
+    green = c.g;
+    blue = c.b;
+  }
+  uniforms.lightColor.value.set(red, green, blue);
   lightCore.material.color.set(c);
   uniforms.lightIntensity.value  = lightParams.intensity;
   uniforms.ambientIntensity.value = lightParams.ambientIntensity;
@@ -595,8 +624,12 @@ function bindStudioControls() {
     inputObjColor.addEventListener('input', (e) => {
       const hex = e.target.value;
       if (previewObjColor) previewObjColor.textContent = hex;
-      const c = new THREE.Color(hex);
-      uniforms.objectColor.value.set(c.r, c.g, c.b);
+      const rgb = parseInt(hex.slice(1), 16);
+      if (luminaC) luminaC.lumina_set_hex_color(rgb, 1);
+      const c = luminaC
+        ? [luminaC.lumina_get_object_red(), luminaC.lumina_get_object_green(), luminaC.lumina_get_object_blue()]
+        : (() => { const fallback = new THREE.Color(hex); return [fallback.r, fallback.g, fallback.b]; })();
+      uniforms.objectColor.value.set(c[0], c[1], c[2]);
     });
   }
 
@@ -612,13 +645,13 @@ function bindStudioControls() {
     });
   };
 
-  bindSlider('input-ka', 'val-ka', (v) => { uniforms.Ka.value = v; }, (v) => v.toFixed(2));
-  bindSlider('input-kd', 'val-kd', (v) => { uniforms.Kd.value = v; }, (v) => v.toFixed(2));
-  bindSlider('input-ks', 'val-ks', (v) => { uniforms.Ks.value = v; }, (v) => v.toFixed(2));
-  bindSlider('input-shininess', 'val-shininess', (v) => { uniforms.shininess.value = v; }, (v) => Math.round(v));
-  bindSlider('input-roughness', 'val-roughness', (v) => { uniforms.roughness.value = v; }, (v) => v.toFixed(2));
-  bindSlider('input-toon-bands', 'val-toon-bands', (v) => { uniforms.toonBands.value = Math.round(v); }, (v) => Math.round(v));
-  bindSlider('input-bump', 'val-bump', (v) => { uniforms.bumpStrength.value = v; }, (v) => v.toFixed(2));
+  bindSlider('input-ka', 'val-ka', (v) => { if (luminaC) luminaC.lumina_set_float(5, v); uniforms.Ka.value = v; }, (v) => v.toFixed(2));
+  bindSlider('input-kd', 'val-kd', (v) => { if (luminaC) luminaC.lumina_set_float(6, v); uniforms.Kd.value = v; }, (v) => v.toFixed(2));
+  bindSlider('input-ks', 'val-ks', (v) => { if (luminaC) luminaC.lumina_set_float(7, v); uniforms.Ks.value = v; }, (v) => v.toFixed(2));
+  bindSlider('input-shininess', 'val-shininess', (v) => { if (luminaC) luminaC.lumina_set_float(8, v); uniforms.shininess.value = v; }, (v) => Math.round(v));
+  bindSlider('input-roughness', 'val-roughness', (v) => { if (luminaC) luminaC.lumina_set_float(9, v); uniforms.roughness.value = v; }, (v) => v.toFixed(2));
+  bindSlider('input-toon-bands', 'val-toon-bands', (v) => { if (luminaC) luminaC.lumina_set_float(10, Math.round(v)); uniforms.toonBands.value = Math.round(v); }, (v) => Math.round(v));
+  bindSlider('input-bump', 'val-bump', (v) => { if (luminaC) luminaC.lumina_set_float(11, v); uniforms.bumpStrength.value = v; }, (v) => v.toFixed(2));
 
   // Header Actions
   const btnReset = document.getElementById('btn-reset-cam');
@@ -709,7 +742,20 @@ function animate() {
 // ─────────────────────────────────────────────
 //  Studio Initialization
 // ─────────────────────────────────────────────
-bindStudioControls();
-loadPreset('Sphere');
-setShader('phong');
-animate();
+async function initializeLuminaC() {
+  if (window.LuminaC) {
+    try {
+      luminaC = await window.LuminaC.ready;
+      luminaC.lumina_init();
+    } catch (error) {
+      luminaC = null;
+    }
+  }
+  bindStudioControls();
+  loadPreset('Sphere');
+  setShader('phong');
+  if (luminaC) updateLightFromSpherical();
+  animate();
+}
+
+initializeLuminaC();

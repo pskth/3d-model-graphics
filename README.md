@@ -68,7 +68,7 @@ npm install
 
 ## Building
 
-The project uses [esbuild](https://esbuild.github.io/) to bundle `main.js` and its dependencies into a single `bundle.js` file that the HTML page loads.
+The project uses Clang to compile `lumina_logic.c` into `lumina.wasm`, and [esbuild](https://esbuild.github.io/) to bundle `main.js` and its dependencies into `bundle.js`. The HTML page loads `lumina-wasm.js` before the Three.js application bundle.
 
 ```shell
 npm run build

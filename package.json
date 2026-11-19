@@ -4,7 +4,8 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "build": "esbuild main.js --bundle --outfile=bundle.js --format=iife --target=es2020",
+    "build:wasm": "clang --target=wasm32 -nostdlib -Wl,--no-entry -Wl,--export-all -Wl,--allow-undefined -o lumina.wasm lumina_logic.c",
+    "build": "npm run build:wasm && esbuild main.js --bundle --outfile=bundle.js --format=iife --target=es2020",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
